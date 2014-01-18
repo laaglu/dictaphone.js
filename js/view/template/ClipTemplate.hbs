@@ -1,0 +1,6 @@
+<a href='#/{{#if recording}}record{{else}}play{{/if}}/{{id}}'>
+  <div>
+    <p><span role='name'>{{name}}</span><img class='state' style='visibility:{{#if icon}}visible{{else}}hidden{{/if}};' {{#if icon}}src='{{icon}}'{{/if}}></p>
+    <p><span>{{creationDate}}</span><span class='duration'>{{duration}}</span></p>
+  </div>
+</a>

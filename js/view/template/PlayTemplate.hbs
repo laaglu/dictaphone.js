@@ -1,0 +1,56 @@
+<section id='clipView' role='region' class='hright' data-type='card'>
+
+  <header>
+    <a href='#/menu'><span class='icon icon-menu'>Show sidebar</span></a>
+    <a href='#/play/{{clip.id}}'><span class='icon icon-menu'>Hide sidebar</span></a>
+    <h1 data-l10n-id='title'></h1>
+  </header>
+  <ul class='compact'>
+    <li>
+      <label data-l10n-id='name'></label>
+      <input type='text' data-l10n-id='name' placeholder='' maxLength='50' value='{{clip.name}}'/>
+    </li>
+    <li>
+      <label data-l10n-id='duration'></label>
+      <input readonly type='text' data-l10n-id='duration' maxLength='50' value='{{duration}}'/>
+    </li>
+    <li>
+      <label data-l10n-id='volume'></label>
+      <div id="volumeSlider" role="slider" aria-valuemin="0" aria-valuenow="{{volume}}" aria-valuemax="1" aria-valuetext="volume slider">
+        <label class="icon icon-volume-min">0</label>
+        <label class="icon icon-volume-max">1</label>
+        <div>
+          <progress value="{{volume}}" max="1"></progress>
+          <button class="slider">handler</button>
+        </div>
+      </div>
+    </li>
+    <li>
+      <label data-l10n-id='position'></label>
+      <div id="positionSlider" role="slider" aria-valuemin="0" aria-valuenow="{{position}}" aria-valuemax="{{clip.duration}}" aria-valuetext="position slider">
+        <label class="icon">0</label>
+        <label class="icon">{{clip.duration}}</label>
+        <div>
+          <progress value="0" max="{{clip.duration}}"></progress>
+          <button class="slider">handler</button>
+        </div>
+      </div>
+    </li>
+    <a role="button" data-type="tapedeck"><span class='icon {{#if playing}}icon-play{{else}}icon-pause{{/if}}'></span></a>
+  </ul>
+  <div role='toolbar'>
+    <ul>
+      <li>
+        <a href='#/erase/{{clip.id}}' role='button'><span class='action-icon delete'>Previous</span></a>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a href='#/previous' role='button'><span class='action-icon browser-back'>Previous</span></a>
+      </li>
+      <li>
+        <a href='#/next' role='button'><span class='action-icon browser-forward'>Next</span></a>
+      </li>
+    </ul>
+  </div>
+</section>

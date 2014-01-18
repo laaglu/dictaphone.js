@@ -1,0 +1,24 @@
+CACHE MANIFEST
+# v1.0 Sun Jan 12 10:43:45 CET 2014
+
+CACHE:
+css/index.css
+manifest.webapp
+index.html
+data/gpl-3.0-standalone.html
+data/source.html
+data/releaseNotes.html
+img/icons/icon-30.png
+img/icons/icon-32.png
+img/icons/icon-60.png
+img/icons/icon-90.png
+img/icons/icon-120.png
+img/icons/icon-128.png
+img/icons/icon-256.png
+js/vendor/l10n.js
+js/main.js
+locales/dictaphone-en.properties
+locales/dictaphone-es.properties
+locales/dictaphone-fr.properties
+locales/locales.ini
+

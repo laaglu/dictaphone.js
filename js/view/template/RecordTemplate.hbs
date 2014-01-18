@@ -1,0 +1,19 @@
+<section id='clipView' role='region' class='hidden' data-type='card'>
+
+  <header>
+    <a href='#/menu'><span class='icon icon-menu'>Show sidebar</span></a>
+    <a href='#/record/{{clip.id}}'><span class='icon icon-menu'>Hide sidebar</span></a>
+    <h1 data-l10n-id='title'></h1>
+  </header>
+  <ul class='compact'>
+    <li>
+      <label data-l10n-id='name'></label>
+      <input type='text' data-l10n-id='name' placeholder='' maxLength='50' value='{{clip.name}}'/>
+    </li>
+    <li>
+      <label data-l10n-id='duration'></label>
+      <input readonly type='text' data-l10n-id='duration' maxLength='50' value='{{duration}}'/>
+    </li>
+    <a role="button" data-type="tapedeck"><span class='icon {{#if recording}}icon-stop{{else}}icon-record{{/if}}'></span></a>
+  </ul>
+</section>

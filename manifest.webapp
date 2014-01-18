@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "name": "dictaphone.js",
+  "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
+  "launch_path": "/index.html",
+  "icons": {
+    "30": "/img/icons/icon-30.png",
+    "32": "/img/icons/icon-32.png",
+    "60": "/img/icons/icon-60.png",
+    "90": "/img/icons/icon-90.png",
+    "120": "/img/icons/icon-120.png",
+    "128": "/img/icons/icon-128.png",
+    "256": "/img/icons/icon-256.png"
+  },
+  "appcache_path": "/index.appcache",
+  "developer": {
+    "name": "Lukas Laag",
+    "url": "http://www.vectomatic.org"
+  },
+  "installs_allowed_from": ["*"],
+  "locales": {
+    "fr": {
+      "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier",
+      "developer": {
+        "name": "Lukas Laag",
+        "url": "http://www.vectomatic.org"
+      }
+    }
+  },
+  "default_locale": "en",
+  "permissions": {
+    "audio-capture" : {
+      "description" : "Capture input from the microphone to create sound clips"
+    },
+    "storage" : {
+      "description" : "Store sound clips in IndexedDB without size limitations"
+    }
+  },
+  "type": "web"
+}
+
