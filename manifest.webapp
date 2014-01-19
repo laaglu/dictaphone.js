@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "name": "dictaphone.js",
+  "name": "dictaphone",
   "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
   "launch_path": "/index.html",
   "icons": {

@@ -29,10 +29,35 @@ require(['backbone', 'DictaphoneRouter'],
       navigator.mozGetUserMedia ||
       navigator.msGetUserMedia);
 
+    var started = false;
+    var startApp = function startApp() {
+      if (!started) {
+        started = true;
+        console.log('The app has started');
+        // The app starts here
+        new DictaphoneRouter();
+        Backbone.history.start();
+      }
+    };
+
+    var count = 0,
+      intervalId = setInterval(function checkWebL10nReady() {
+      if (document.webL10n.getReadyState() === 'complete') {
+        console.log('webl10n delayed initialization');
+        startApp();
+        clearInterval(intervalId);
+      } else {
+        count++;
+        if (count > 20) {
+          alert('webl10n initialization error');
+          clearInterval(intervalId);
+        }
+      }
+    }, 500);
+
     document.webL10n.ready(function() {
-      // The app starts here
-      new DictaphoneRouter();
-      Backbone.history.start();
+      console.log('webl10n regular initialization');
+      startApp();
     });
   }
 );

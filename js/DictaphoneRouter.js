@@ -58,9 +58,11 @@ define([
 
       initialize : function() {
         var stage1 = function stage1() {
-          samples.init({success: stage2.bind(this), error:logger.error});
+          console.log('Stage 1 init complete');
+          samples.init({success: stage2.bind(this), error:console.error});
         };
         var stage2 = function stage2() {
+          console.log('Stage 2 init complete');
           this.menuView = new MenuView().render();
 
           // The current clip index to power back / forward buttons in the play view
@@ -79,7 +81,7 @@ define([
             }
           });
         };
-        clipModels.fetch({success: stage1.bind(this), error:logger.error});
+        clipModels.fetch({success: stage1.bind(this), error:console.error});
       },
 
       menu: function() {
