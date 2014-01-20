@@ -9,7 +9,7 @@ rm -rf ../dictaphone.js.optimized/js/vendor/require-2.1.6.js
 rm -rf ../dictaphone.js.optimized/.idea
 rm -rf ../dictaphone.js.optimized/.git
 rm -rf ../dictaphone.js.optimized/img/embedded
-mv ../dictaphone.js.optimized/index.html.opt ../dictaphone.js.optimized/index.html
+sed -e "s@<html class='no-js'>@<html manifest='index.appcache' class='no-js'>@g" index.html | sed -e "s@<script data-main='js/main' src='js/vendor/require-2.1.6.js'></script>@<script type='text/javascript' src='js/main.js'></script>@g" > ../dictaphone.js.optimized/index.html
 rm -rf ../dictaphone.js.zip
 DATE=`date`
 VERSION=`grep version manifest.webapp | sed -e 's/[^0-9.]*//g'`

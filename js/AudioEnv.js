@@ -1,6 +1,5 @@
-define(['Logger'], function(logger) {
+define(['Logger', 'modernizr'], function(logger, Modernizr) {
   var env = {
-    context : window.webkitAudioContext ? new webkitAudioContext() : new AudioContext(),
     init: function init(options) {
       navigator.getMedia (
         {
@@ -16,5 +15,8 @@ define(['Logger'], function(logger) {
       );
     }
   };
+  if (Modernizr.webaudio) {
+    env.context = window.webkitAudioContext ? new webkitAudioContext() : new AudioContext();
+  }
   return env;
 });

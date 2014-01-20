@@ -14,7 +14,8 @@
     underscore: 'vendor/underscore',
     backbone: 'vendor/backbone',
     moment: 'vendor/moment-langs-2.2.1.min',
-    handlebars: 'vendor/handlebars'
+    handlebars: 'vendor/handlebars',
+    modernizr : 'modernizr.custom.24918'
   },
   shim: {
     'jquery': {

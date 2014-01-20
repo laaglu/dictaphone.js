@@ -364,8 +364,13 @@ a[data-type='tapedeck'] > span {
 #loadingView {
   z-index:110;
 }
+#prereqView {
+  z-index:120;
+  font-weight: 400;
+  font-size: 1.5rem;
+}
 
-#loadingView, #factoryResetView {
+#loadingView, #factoryResetView, #prereqView {
   position:absolute;
   background:white;
   width:100%;
