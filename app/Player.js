@@ -30,11 +30,11 @@ var logger = require('Logger');
  * AudioBufferSourceNode ---> GainNode() -------> AudioDestinationNode
  * @param options
  * clip: {ClipModel} the clip to replay
- * heartbeat: {number} refresh rate
- * logger: {Object} must implement log, error
+ * heartbeat: {number} Frequency of update of the scheduler
+ * logger: {Object} Logger object to trace scheduling. Must implement log, error
  * timer: {Object} must implement getCurrentTime, start, stop
- * scheduler: {Object} must implement scheduleSample
- * loader: {Loader} loader object
+ * scheduler: {Object} Scheduler object to start samples playback using WebAudio API. Must implement scheduleSample
+ * loader: {Loader} Loader object to fetch samples from IndexedDB
  * loop: {boolean} true to play sound in a loop
  * @constructor
  */

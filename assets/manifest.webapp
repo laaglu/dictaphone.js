@@ -47,6 +47,10 @@
     },
     "storage" : {
       "description" : "Store sound clips in IndexedDB without size limitations"
+    },
+    "device-storage:music" : {
+     "access" : "readcreate",
+     "description" : "Export recorded clips as .WAV files to the device music storage"
     }
   },
   "type": "web"

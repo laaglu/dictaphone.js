@@ -121,6 +121,9 @@ var ClipModel = Backbone.Model.extend({
   },
   isRecording: function isRecording() {
     return this.recorder && this.recorder.recording;
+  },
+  isExporting: function isExporting() {
+    return this.exporter && this.exporter.exporting;
   }
 });
 module.exports = ClipModel;

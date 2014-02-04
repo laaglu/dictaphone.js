@@ -70,7 +70,9 @@ section[data-type='card'] > header:first-child h1 {
 #playView.hmid > header > a:first-child,
 #playView:not(.hmid) > header > a:not(:first-child),
 #recordView.hmid > header > a:first-child,
-#recordView:not(.hmid) > header > a:not(:first-child) {
+#recordView:not(.hmid) > header > a:not(:first-child),
+#exportView.hmid > header > a:first-child,
+#exportView:not(.hmid) > header > a:not(:first-child) {
   display:none;
 }
 
@@ -82,7 +84,7 @@ section[data-type='card'] > header:first-child h1 {
   }
 }
 
-#playView, #recordView {
+#playView, #recordView, #exportView {
   background: white;
   position: fixed;
   top: 0;
@@ -125,6 +127,9 @@ div[role="slider"] > label.icon-volume-max {
 }
 .recording {
   background-image: url(./embedded/media-record-a.svg)
+}
+.icon-export {
+  background-image: url(./embedded/export.svg)
 }
 
 section[role="region"] > header:first-child .icon-mic {

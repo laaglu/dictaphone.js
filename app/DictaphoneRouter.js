@@ -22,6 +22,7 @@
 
 var viewStack = require('ViewStack');
 var Player = require('Player');
+var Exporter = require('Exporter');
 var install = require('model/Installation');
 var clipModels = require('model/ClipModels');
 var samples = require('model/Samples');
@@ -30,6 +31,7 @@ var PlayView = require('view/PlayView');
 var RecordView = require('view/RecordView');
 var ClipListView = require('view/ClipListView');
 var FactoryResetView = require('view/FactoryResetView');
+var ExportView = require('view/ExportView');
 var ViewBase = require('view/ViewBase');
 var LazyView = require('view/LazyView');
 var AboutView = require('view/AboutView');
@@ -45,6 +47,7 @@ module.exports = Backbone.Router.extend({
     'menu':                       'menu',
     'list':                       'list',
     'erase/:clipid':              'erase',
+    'export/:clipid':             'export_',
     'next':                       'next',
     'previous':                   'previous',
     'factoryReset':               'factoryReset',
@@ -89,12 +92,24 @@ module.exports = Backbone.Router.extend({
   menu: function() {
     logger.log('menu', this);
     if (this.menuView) {
-      this.menuView.update();
+      this.menuView.update(this.getCurrentClip());
     }
     viewStack.showMenu();
   },
 
-  play: function(clipid) {
+  getCurrentClip : function getCurrentClip() {
+    var playView = this.playView, entry;
+
+    if (playView) {
+      entry = viewStack.peek();
+      if (entry && entry.view === playView) {
+        return playView.model;
+      }
+    }
+    return null;
+  },
+
+  play: function play(clipid) {
     var clipModel;
 
     logger.log('play', clipid);
@@ -116,7 +131,7 @@ module.exports = Backbone.Router.extend({
     }
   },
 
-  record: function(clipid) {
+  record: function record(clipid) {
     var clipModel;
 
     logger.log('record', clipid);
@@ -135,7 +150,7 @@ module.exports = Backbone.Router.extend({
     }
   },
 
-  list: function(callback) {
+  list: function list(callback) {
     logger.log('list');
     if (!this.clipListView) {
       this.clipListView = new ClipListView().render();
@@ -144,7 +159,7 @@ module.exports = Backbone.Router.extend({
     viewStack.showView(this.clipListView, true, callback);
   },
 
-  erase: function(clipid) {
+  erase: function erase(clipid) {
     var clipModel;
 
     logger.log('erase', clipid);
@@ -171,7 +186,39 @@ module.exports = Backbone.Router.extend({
     }
   },
 
-  next: function() {
+  export_: function export_(clipid) {
+    var clipModel;
+
+    logger.log('export', clipid);
+    if (clipid) {
+
+      if (!this.exportView) {
+        this.exportView = new ExportView();
+      }
+      clipModel = clipModels.get(clipid);
+      if (clipModel) {
+        var exporterReady = function exporterReady() {
+          this.exportView.model = clipModel;
+          this.exportView.render();
+          viewStack.showView(this.exportView, true);
+        }.bind(this);
+        if (!clipModel.exporter) {
+          Exporter.createExporter({
+            clip: clipModel,
+            success: function(exporter) {
+              clipModel.exporter = exporter;
+              exporterReady();
+            },
+            error: logger.error
+          });
+        } else {
+          exporterReady();
+        }
+      }
+    }
+  },
+
+  next: function next() {
     logger.log('next');
     this.clipIndex++;
     if (this.clipIndex >= clipModels.length) {
@@ -180,7 +227,7 @@ module.exports = Backbone.Router.extend({
     location.hash = '#/play/' + clipModels.at(this.clipIndex).id;
   },
 
-  previous: function() {
+  previous: function previous() {
     logger.log('previous');
     this.clipIndex--;
     if (this.clipIndex < 0) {
@@ -189,7 +236,7 @@ module.exports = Backbone.Router.extend({
     location.hash = '#/play/' + clipModels.at(this.clipIndex).id;
   },
 
-  factoryReset: function() {
+  factoryReset: function factoryReset() {
     logger.log('factoryReset');
     if (confirm(document.webL10n.get('factorySettings'))) {
       if (!this.factoryResetView) {
@@ -221,7 +268,7 @@ module.exports = Backbone.Router.extend({
     }
   },
 
-  about: function() {
+  about: function about() {
     logger.log('about');
     if (!this.aboutView) {
       this.aboutView = new AboutView().render();
@@ -245,7 +292,7 @@ module.exports = Backbone.Router.extend({
     viewStack.showView(this.translationsView);
   },
 
-  legal: function() {
+  legal: function legal() {
     logger.log('legal');
     if (!this.legalView) {
       this.legalView = new ViewBase({
@@ -255,7 +302,7 @@ module.exports = Backbone.Router.extend({
     viewStack.showView(this.legalView);
   },
 
-  releaseNotes : function() {
+  releaseNotes : function releaseNotes() {
     logger.log('releaseNotes');
     if (!this.releaseNotesView) {
       this.releaseNotesView = new LazyView({el : $('#releaseNotesView')[0], path:'/data/releaseNotes.html'}).render();
@@ -263,7 +310,7 @@ module.exports = Backbone.Router.extend({
     viewStack.showView(this.releaseNotesView);
   },
 
-  gpl: function() {
+  gpl: function gpl() {
     logger.log('gpl');
     if (!this.gplView) {
       this.gplView = new LazyView({el : $('#gplView')[0], path:'/data/gpl-3.0-standalone.html'}).render();
@@ -271,13 +318,13 @@ module.exports = Backbone.Router.extend({
     viewStack.showView(this.gplView);
   },
 
-  install : function() {
+  install : function install() {
     logger.log('install');
     install.install();
     location.hash = '#/about';
   },
 
-  update : function() {
+  update : function update() {
     logger.log('update');
     // Only FFOS supports update (in non-packaged hosted mode)
     // This occurs when manifest installed in the device

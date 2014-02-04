@@ -28,12 +28,19 @@ module.exports = ViewBase.extend({
   el: '#menuView',
   template: MenuTemplate,
   render : function() {
-    var tpl = $(this.template({ id: clipModels.currentId() }));
+    var tpl = $(this.template({ recordId: clipModels.currentId() }));
     document.webL10n.translate(tpl[0]);
     this.replaceContent(tpl);
+    this.exportMenuItem = $('#exportMenuItem');
     return this;
   },
-  update : function() {
+  update : function(currentClip) {
     this.$('a[data-l10n-id="newClip"]').attr('href', '#/record/' + clipModels.currentId());
+    if (currentClip) {
+      this.$('a[data-l10n-id="exportClip"]').attr('href', '#/export/' + currentClip.id);
+      this.exportMenuItem.css('display', 'block');
+    } else {
+      this.exportMenuItem.css('display', 'none');
+    }
   }
 });
