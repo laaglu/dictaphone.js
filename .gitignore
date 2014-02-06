@@ -1,0 +1,11 @@
+.idea/
+js/view/template/AboutTemplate.js
+js/view/template/ClipListTemplate.js
+js/view/template/ClipTemplate.js
+js/view/template/ExportTemplate.js
+js/view/template/FactoryResetTemplate.js
+js/view/template/MenuTemplate.js
+js/view/template/PlayTemplate.js
+js/view/template/PrereqTemplate.js
+js/view/template/RecordTemplate.js
+
