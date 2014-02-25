@@ -33,29 +33,25 @@ define(['view/ViewBase', 'view/template/RecordTemplate', 'model/ClipModels', 'Re
         this.model.set('name', this.name.val());
       },
       toggleRecord : function toggleRecord(e) {
-        var ready = function ready() {
-          if (this.model.isRecording()) {
-            this.recordButton.addClass('icon-record');
-            this.recordButton.removeClass('icon-stop');
-            var terminate = function terminate() {
-              // Display the clip list view
-              location.hash = '#/list';
-            }.bind(this);
-            this.model.recorder.stop({ success: terminate, error:logger.error });
-          } else {
+        if (this.model.isRecording()) {
+          this.recordButton.addClass('icon-record');
+          this.recordButton.removeClass('icon-stop');
+          var terminate = function terminate() {
+            // Display the clip list view
+            location.hash = '#/list';
+          }.bind(this);
+          this.model.recorder.stop({ success: terminate, error:logger.error });
+        } else {
+          var ready = function ready(localMediaStream) {
             this.recordButton.addClass('icon-stop');
             this.recordButton.removeClass('icon-record');
             clipModels.nextId();
             clipModels.add(this.model);
             this.model.recorder = new Recorder({model: this.model});
-            this.model.recorder.start();
+            this.model.recorder.start(localMediaStream);
             this.update(this.model);
-          }
-        }.bind(this);
-        if (!env.localMediaStream) {
-          env.init({success: ready });
-        } else {
-          ready();
+          }.bind(this);
+          env.getLocalMediaStream({success: ready });
         }
       },
       update: function update(model) {

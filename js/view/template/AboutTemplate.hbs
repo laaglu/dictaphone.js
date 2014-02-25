@@ -36,7 +36,20 @@
         <ul>
           <li>
             <label class="pack-switch">
-              <input type="checkbox" {{#if debugLogs}}checked{{/if}}>
+              <input id="debugLogs" type="checkbox" {{#if debugLogs}}checked{{/if}}>
+              <span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <header>
+          <h2 data-l10n-id='releaseMic'></h2>
+        </header>
+        <ul>
+          <li>
+            <label class="pack-switch">
+              <input id="releaseMic" type="checkbox" {{#if releaseMic}}checked{{/if}}>
               <span></span>
             </label>
           </li>

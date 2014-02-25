@@ -1,6 +1,8 @@
 define(['model/ClipModels', 'model/ClipModel', 'model/Samples', 'Logger', 'AudioEnv'],
   function(clipModels, ClipModel, samples, logger, env) {
+
     "use strict";
+
     /**
      * @constructor
      * @param options
@@ -45,6 +47,11 @@ define(['model/ClipModels', 'model/ClipModel', 'model/Samples', 'Logger', 'Audio
      * @type {boolean}
      */
     Recorder.prototype.recording = false;
+    /**
+     * The local media stream used for recording
+     * @type {LocalMediaStream}
+     */
+    Recorder.prototype.localMediaStream = null;
 
     /**
      * Creates a web audio API recorder graph with the following structure
@@ -54,11 +61,12 @@ define(['model/ClipModels', 'model/ClipModel', 'model/Samples', 'Logger', 'Audio
      * MediaStreamSource(LocalMediaStream ) ---> GainNode(0) -----------> AudioDestinationNode
      *                                       |-> ScriptProcessorNode -|
      */
-    Recorder.prototype.start = function start() {
+    Recorder.prototype.start = function start(localMediaStream) {
+      this.localMediaStream = localMediaStream;
       this.recording = true;
       this.clip.trigger('clip:state');
       var context = env.context;
-      this.inputNode = context.createMediaStreamSource(env.localMediaStream);
+      this.inputNode = context.createMediaStreamSource(localMediaStream);
       this.gainNode = context.createGain();
       this.gainNode.gain.value = 0;
       // Create buffers that can hold approximately 1/10s of recording at 44.1khz
@@ -112,6 +120,14 @@ define(['model/ClipModels', 'model/ClipModel', 'model/Samples', 'Logger', 'Audio
       this.gainNode = null;
       this.processorNode.disconnect();
       this.processorNode = null;
+
+      if (env.getReleaseMic()) {
+        this.localMediaStream.stop();
+        // For firefox: the object does not have the ended property.
+        if (!this.localMediaStream.ended) {
+          this.localMediaStream.ended = true;
+        }
+      }
 
       // Save remaining samples
       this.flush();

@@ -1,5 +1,5 @@
-define(['view/ViewBase', 'view/template/AboutTemplate', 'model/Installation', 'Logger'],
-  function(ViewBase, AboutTemplate, install, logger) {
+define(['view/ViewBase', 'view/template/AboutTemplate', 'model/Installation', 'AudioEnv', 'Logger'],
+  function(ViewBase, AboutTemplate, install, env, logger) {
 
     "use strict";
 
@@ -9,7 +9,8 @@ define(['view/ViewBase', 'view/template/AboutTemplate', 'model/Installation', 'L
       model: install,
       events: {
         'click a[data-l10n-id="installBtn"]' : 'showNotification',
-        'change input[type="checkbox"]' : 'toggleDebug'
+        'change #debugLogs' : 'toggleDebug',
+        'change #releaseMic' : 'toggleReleaseMic'
       },
 
       initialize: function () {
@@ -31,7 +32,8 @@ define(['view/ViewBase', 'view/template/AboutTemplate', 'model/Installation', 'L
           install: install,
           update: update,
           error: this.model.get('error'),
-          debugLogs: logger.getShowLogs()
+          debugLogs: logger.getShowLogs(),
+          releaseMic: env.getReleaseMic()
         }));
         document.webL10n.translate(tpl[0]);
         this.replaceContent(tpl);
@@ -54,6 +56,11 @@ define(['view/ViewBase', 'view/template/AboutTemplate', 'model/Installation', 'L
       toggleDebug : function() {
         logger.log('toggleDebug()');
         logger.setShowLogs('' + (!logger.getShowLogs()));
+      },
+
+      toggleReleaseMic : function() {
+        logger.log('toggleReleaseMic()');
+        env.setReleaseMic('' + (!env.getReleaseMic()));
       }
     });
   }
