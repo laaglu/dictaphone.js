@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "dictaphone",
   "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
   "launch_path": "/index.html",

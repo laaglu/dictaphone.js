@@ -7,14 +7,14 @@ define(['view/ViewBase', 'view/template/PlayTemplate', 'model/ClipModels', 'seek
       template: PlayTemplate,
       playButton: null,
       events: {
-        'click a[data-type="tapedeck"]': 'togglePlay',
+        'click #tapedeck2a': 'togglePlay',
+        'click #tapedeck2b' : 'toggleLoop',
         'change input[data-l10n-id="name"]' : 'updateName',
         'change #volumeSlider' : 'volumeChange',
         'mousedown #positionSlider' : 'positionDown',
         'mouseup #positionSlider' : 'positionUp',
         'touchstart #positionSlider' : 'positionDown',
         'touchend #positionSlider' : 'positionUp'
-
       },
       render : function render() {
         var data = {};
@@ -23,6 +23,7 @@ define(['view/ViewBase', 'view/template/PlayTemplate', 'model/ClipModels', 'seek
         data.duration = this.model.getDuration();
         data.position = this.model.player.clipTime;
         data.volume = this.model.player.getVolume();
+        data.loop = this.model.player.loop;
 
         var tpl = $(this.template(data));
         document.webL10n.translate(tpl[0]);
@@ -32,7 +33,8 @@ define(['view/ViewBase', 'view/template/PlayTemplate', 'model/ClipModels', 'seek
       },
       lazyRender: function lazyRender() {
         // Keep references to mutable DOM elements
-        this.playButton = this.$('a[data-type="tapedeck"] span');
+        this.playButton = this.$('#tapedeck2a span');
+        this.loopButton = this.$('#tapedeck2b');
         utils.seekbars.init();
         this.volumeSlider = utils.seekbars.bind(document.getElementById('volumeSlider'));
         this.positionSlider = utils.seekbars.bind(document.getElementById('positionSlider'));
@@ -45,8 +47,10 @@ define(['view/ViewBase', 'view/template/PlayTemplate', 'model/ClipModels', 'seek
         this.model.save({});
       },
       volumeChange : function volumeChange(e) {
-        logger.log('volumeChange', this.volumeSlider.getValue());
-        this.model.player.setVolume(this.volumeSlider.getValue());
+        if (this.volumeSlider) {
+          logger.log('volumeChange', this.volumeSlider.getValue());
+          this.model.player.setVolume(this.volumeSlider.getValue());
+        }
       },
       positionDown : function positionDown(e) {
         logger.log('positionDown', this.positionSlider.getValue());
@@ -70,6 +74,13 @@ define(['view/ViewBase', 'view/template/PlayTemplate', 'model/ClipModels', 'seek
           this.model.player.start(this.positionSlider.getValue());
         }
         this.update(this.model);
+      },
+      toggleLoop : function toggleLoop(e) {
+        var loop;
+        logger.log('toggleLoop');
+        loop = this.model.player.loop;
+        this.model.player.loop = !loop;
+        this.loopButton.attr('pressed', !loop);
       },
       update: function update(model) {
         // If the model has changed, do not update the UI

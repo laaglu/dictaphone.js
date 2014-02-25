@@ -1,5 +1,4 @@
 <section id='clipView' role='region' class='hright' data-type='card'>
-
   <header>
     <a href='#/menu'><span class='icon icon-menu'>Show sidebar</span></a>
     <a href='#/play/{{clip.id}}'><span class='icon icon-menu'>Hide sidebar</span></a>
@@ -37,7 +36,10 @@
           </div>
         </div>
       </li>
-      <a role="button" data-type="tapedeck"><span class='icon {{#if playing}}icon-play{{else}}icon-pause{{/if}}'></span></a>
+      <div id="tapedeck2">
+        <a id="tapedeck2a" role="button"><span class='icon {{#if playing}}icon-play{{else}}icon-pause{{/if}}'></span></a>
+        <a id="tapedeck2b" role="button" pressed="{{#if loop}}true{{else}}false{{/if}}"><span class='icon icon-loop'></span></a>
+      </div>
     </ul>
   </article>
   <div role='toolbar'>

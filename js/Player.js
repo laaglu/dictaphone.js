@@ -7,6 +7,13 @@ define(['backbone', 'model/ClipModel', 'Loader', 'Logger', 'AudioEnv'],
      * The player uses the following audio graph:
      * AudioBufferSourceNode ---> GainNode() -------> AudioDestinationNode
      * @param options
+     * clip: {ClipModel} the clip to replay
+     * heartbeat: {number} refresh rate
+     * logger: {Object} must implement log, error
+     * timer: {Object} must implement getCurrentTime, start, stop
+     * scheduler: {Object} must implement scheduleSample
+     * loader: {Loader} loader object
+     * loop: {boolean} true to play sound in a loop
      * @constructor
      */
     function Player(options) {
@@ -16,6 +23,7 @@ define(['backbone', 'model/ClipModel', 'Loader', 'Logger', 'AudioEnv'],
       this.gainNode = env.context.createGain();
       this.gainNode.connect(env.context.destination);
       this.logger = options.logger || logger;
+      this.loop = options.loop === true;
 
       // Define a timer based on Web Audio API to the currentTime
       // and window.setInterval to invoke periodic updates
@@ -80,6 +88,11 @@ define(['backbone', 'model/ClipModel', 'Loader', 'Logger', 'AudioEnv'],
      */
     Player.prototype.scheduler = null;
     /**
+     * True to play the clip in an infinite loop
+     * @type {boolean}
+     */
+    Player.prototype.loop = false;
+    /**
      * True if the player is playing, false otherwise
      * @type {boolean}
      */
@@ -132,9 +145,13 @@ define(['backbone', 'model/ClipModel', 'Loader', 'Logger', 'AudioEnv'],
           this.scheduler.scheduleSample(sample, sampleTime);
           this.endTime = sampleTime + this.clip.sampleLength();
           if (sample.offset + this.clip.get('sampleSize') >= this.clip.get('totalSize')) {
-            this.stop();
             // Reset clip time to start of clip
             this.clipTime = 0;
+            if (this.loop) {
+              this.loader.reset(0);
+            } else {
+              this.stop();
+            }
           }
         }
       }

@@ -93,18 +93,21 @@
           <label class="icon">0</label>
           <label class="icon">{{clip.duration}}</label>
           <div>
-            <progress value="0" max="{{position}}"></progress>
+            <progress value="0" max="{{clip.duration}}"></progress>
             <button class="slider">handler</button>
           </div>
         </div>
       </li>
-      <a role="button" data-type="tapedeck"><span class='icon {{#if playing}}icon-play{{else}}icon-pause{{/if}}'></span></a>
+      <div id="tapedeck2">
+        <a id="tapedeck2a" role="button"><span class='icon {{#if playing}}icon-play{{else}}icon-pause{{/if}}'></span></a>
+        <a id="tapedeck2b" role="button" pressed="{{#if loop}}true{{else}}false{{/if}}"><span class='icon icon-loop'></span></a>
+      </div>
     </ul>
   </article>
   <div role='toolbar'>
     <ul>
       <li>
-        <a href='#/erase' role='button'><span class='action-icon delete'>Previous</span></a>
+        <a href='#/erase/{{clip.id}}' role='button'><span class='action-icon delete'>Previous</span></a>
       </li>
     </ul>
     <ul>

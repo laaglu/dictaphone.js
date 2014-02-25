@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="100" version="1.1"
+ viewBox = "-175 -175 350 350" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="lgr1" gradientUnits="userSpaceOnUse" x1="-100" y1="-100" x2="100" y2="100">
+   <stop stop-color="#fff" offset="0"/>
+   <stop stop-color="#ccc" offset="1"/>
+  </linearGradient>
+ </defs>
+ <path style="fill:url(#lgr1);stroke:black;stroke-width:3px;" d="M 47.5,-82.272415 A 95.0,95.0 60.0 1,1 -16.496576,-93.55674 L -11.287131,-64.012505 A 65.0,65.0 60.0 1,0 32.5,-56.291653 L 25.0,-43.30127 L -1.469576E-14,-80.0 L 55.0,-95.262794 z" class="compass"/>
+</svg>
