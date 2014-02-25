@@ -89,7 +89,6 @@ define([], function() {
      * halfHandlerWidth:
      * valuemin:
      * valuemax:
-     * valuestart:
      * deltaX:
      * currentX:
      * startX:
@@ -119,7 +118,7 @@ define([], function() {
       }
 
       // We have to place the handler and set the correct value to progress bar
-      var value = this.valuestart = getProgressValue(vnow, vmin, vmax);
+      var value = getProgressValue(vnow, vmin, vmax);
       this.placeHandler(value);
       progress.value = value;
       progress.max = MAX_VALUE;
@@ -200,7 +199,7 @@ define([], function() {
         this.handler.style[transformProp] = 'translateX(' + deltaX + 'px)';
 
         // Changes the progress value
-        this.setProgressValue(this.valuestart + (deltaX / this.progressWidth));
+        this.setProgressValue(deltaX / this.progressWidth);
       },
 
       getValue: function getValue() {
@@ -249,7 +248,7 @@ define([], function() {
 
         // Variables to null
         this.progress = this.slider = this.handler = this.valuemax =
-        this.valuemin = this.valuestart = this.progressWidth =
+        this.valuemin = this.progressWidth =
         this.deltaX = this.currentX = this.progressLeft =
         this.progressRight = null;
       }
@@ -274,8 +273,7 @@ define([], function() {
     function reArrange() {
       sliders.forEach(function(slider) {
         slider.calculateDimensions();
-        slider.valuestart = slider.progress.value;
-        slider.placeHandler(slider.valuestart);
+        slider.placeHandler(slider.progress.value);
       });
     }
 
