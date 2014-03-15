@@ -75,7 +75,7 @@ module.exports = ViewBase.extend({
         this.model.recorder.start(localMediaStream);
         this.update(this.model);
       }.bind(this);
-      env.getLocalMediaStream({success: ready });
+      env.getMediaSource({success: ready });
     }
   },
   update: function update(model) {

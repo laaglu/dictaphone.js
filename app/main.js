@@ -43,11 +43,6 @@ var started = false,
       }
       if (!features.length) {
         // The requirements are complete
-        navigator.getMedia = ( navigator.getUserMedia ||
-          navigator.webkitGetUserMedia ||
-          navigator.mozGetUserMedia ||
-          navigator.msGetUserMedia);
-
         // The app starts here
         moment.lang(navigator.language || navigator.userLanguage);
         new DictaphoneRouter();

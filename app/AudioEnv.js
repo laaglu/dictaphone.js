@@ -25,33 +25,48 @@ var logger = require('Logger');
 
 var RELEASE_MIC = 'releaseMic',
   releaseMic = localStorage.getItem(RELEASE_MIC),
-  env = {
-    getLocalMediaStream: function getLocalMediaStream(options) {
-      if (!env.localMediaStream || env.ended || env.getReleaseMic()) {
-        navigator.getMedia (
-          {
-            video: false,
-            audio: true
-          },
-          function(localMediaStream) {
-            env.localMediaStream = localMediaStream;
-            env.bufferSize = options.bufferSize || 4096;
-            options.success(localMediaStream);
-          },
-          options.error || logger.error
-        );
-      } else {
-        options.success(env.localMediaStream);
-      }
-    },
-    getReleaseMic : function getReleaseMic() {
-      return releaseMic === 'true';
-    },
-    setReleaseMic : function setReleaseMic(value) {
-      localStorage.setItem(RELEASE_MIC, value);
-      releaseMic = value;
+  env;
+navigator.getMedia = ( navigator.getUserMedia ||
+  navigator.webkitGetUserMedia ||
+  navigator.mozGetUserMedia ||
+  navigator.msGetUserMedia);
+env = {
+  getMediaSource: function getMediaSource(options) {
+    if (!env.mediaSource || env.mediaSource.mediaStream.ended || env.getReleaseMic()) {
+      navigator.getMedia (
+        {
+          video: false,
+          audio: true
+        },
+        function(localMediaStream) {
+          env.mediaSource = env.context.createMediaStreamSource(localMediaStream);
+          env.bufferSize = options.bufferSize || 4096;
+            options.success(env.mediaSource);
+        },
+        options.error || logger.error
+      );
+    } else {
+      options.success(env.mediaSource);
     }
-  };
+  },
+  releaseMediaSource: function(source) {
+    var mediaStream;
+    if (env.getReleaseMic() && (mediaStream = source.mediaStream)) {
+      mediaStream.stop();
+      // For firefox: the object does not have the ended property.
+      if (!mediaStream.ended) {
+        mediaStream.ended = true;
+      }
+    }
+  },
+  getReleaseMic : function getReleaseMic() {
+    return releaseMic === 'true';
+  },
+  setReleaseMic : function setReleaseMic(value) {
+    localStorage.setItem(RELEASE_MIC, value);
+    releaseMic = value;
+  }
+};
 if (releaseMic === null) {
   env.setReleaseMic('true');
 }

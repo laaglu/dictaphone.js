@@ -429,6 +429,14 @@ window.Modernizr = (function( window, document, undefined ) {
   });
 
 
+  Modernizr.addTest('deviceStorage', function() {
+    return typeof navigator.getDeviceStorage === 'function';
+  });
+
+  Modernizr.addTest('fileHandle', function() {
+    return typeof window.FileHandle === 'function';
+  });
+
   return Modernizr;
 
 })(this, this.document);

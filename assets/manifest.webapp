@@ -53,6 +53,6 @@
      "description" : "Export recorded clips as .WAV files to the device music storage"
     }
   },
-  "type": "web"
+  "type": "privileged"
 }
 

@@ -65,11 +65,6 @@ Recorder.prototype.bufferCapacity = 0;
  * @type {boolean}
  */
 Recorder.prototype.recording = false;
-/**
- * The local media stream used for recording
- * @type {LocalMediaStream}
- */
-Recorder.prototype.localMediaStream = null;
 
 /**
  * Creates a web audio API recorder graph with the following structure
@@ -79,12 +74,11 @@ Recorder.prototype.localMediaStream = null;
  * MediaStreamSource(LocalMediaStream ) ---> GainNode(0) -----------> AudioDestinationNode
  *                                       |-> ScriptProcessorNode -|
  */
-Recorder.prototype.start = function start(localMediaStream) {
-  this.localMediaStream = localMediaStream;
+Recorder.prototype.start = function start(sourceNode) {
   this.recording = true;
   this.clip.trigger('clip:state');
   var context = env.context;
-  this.inputNode = context.createMediaStreamSource(localMediaStream);
+  this.inputNode = sourceNode;
   this.gainNode = context.createGain();
   this.gainNode.gain.value = 0;
   // Create buffers that can hold approximately 1/10s of recording at 44.1khz
@@ -129,23 +123,19 @@ Recorder.prototype.copyBuffer = function copyBuffer(buffer) {
  * error: backbone.js error callback
  */
 Recorder.prototype.stop = function stop(options) {
+
   this.recording = false;
   // Deactivate the Web Audio API graph
   this.processorNode.onaudioprocess = null;
   this.inputNode.disconnect();
-  this.inputNode = null;
   this.gainNode.disconnect();
-  this.gainNode = null;
   this.processorNode.disconnect();
-  this.processorNode = null;
 
-  if (env.getReleaseMic()) {
-    this.localMediaStream.stop();
-    // For firefox: the object does not have the ended property.
-    if (!this.localMediaStream.ended) {
-      this.localMediaStream.ended = true;
-    }
-  }
+  env.releaseMediaSource(this.inputNode);
+
+  this.inputNode = null;
+  this.gainNode = null;
+  this.processorNode = null;
 
   // Save remaining samples
   this.flush();
