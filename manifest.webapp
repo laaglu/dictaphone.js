@@ -1,8 +1,14 @@
 {
-  "version": "1.0.3",
-  "name": "dictaphone",
+  "version": "1.0.4",
+  "name": "Dictaphone",
   "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
+  "developer": {
+    "name": "Lukas Laag",
+    "url": "http://www.vectomatic.org"
+  },
   "launch_path": "/index.html",
+  "appcache_path": "/index.appcache",
+  "installs_allowed_from": ["*"],
   "icons": {
     "30": "/img/icons/icon-30.png",
     "32": "/img/icons/icon-32.png",
@@ -12,22 +18,17 @@
     "128": "/img/icons/icon-128.png",
     "256": "/img/icons/icon-256.png"
   },
-  "appcache_path": "/index.appcache",
-  "developer": {
-    "name": "Lukas Laag",
-    "url": "http://www.vectomatic.org"
-  },
-  "installs_allowed_from": ["*"],
+  "default_locale": "en",
   "locales": {
     "fr": {
-      "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier",
-      "developer": {
-        "name": "Lukas Laag",
-        "url": "http://www.vectomatic.org"
-      }
+      "name": "Dictaphone",
+      "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier"
+    },
+    "es": {
+      "name": "Dictáfono",
+      "description": "Una aplicación de grabación de voz digital para la web en general y FirefoxOS en particular"
     }
   },
-  "default_locale": "en",
   "permissions": {
     "audio-capture" : {
       "description" : "Capture input from the microphone to create sound clips"

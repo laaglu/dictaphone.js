@@ -17,8 +17,8 @@ img/icons/icon-128.png
 img/icons/icon-256.png
 js/vendor/l10n.js
 js/main.js
-locales/dictaphone-en.properties
-locales/dictaphone-es.properties
-locales/dictaphone-fr.properties
+locales/en/app.properties
+locales/es/app.properties
+locales/fr/fr.properties
 locales/locales.ini
 
