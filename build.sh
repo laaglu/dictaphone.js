@@ -1,7 +1,16 @@
 #!/bin/bash
 # Build script for dictaphone.js
+
+# Compile templates with handlerbars
+(cd js/view/template ; for FILE in `ls *.hbs`
+do
+  handlebars -a -f ${FILE/hbs/js} ${FILE}
+done)
+
+# Compile AMD modules with r.js
 r.js -o app.build.js
-rm -f ../dictaphone.js.optimized/app.build.js 
+
+rm -f ../dictaphone.js.optimized/app.build.js
 rm -f ../dictaphone.js.optimized/build.txt
 rm -f ../dictaphone.js.optimized/build.sh
 rm -rf ../dictaphone.js.optimized/js/view
