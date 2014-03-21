@@ -19,6 +19,6 @@ js/vendor/l10n.js
 js/main.js
 locales/en/app.properties
 locales/es/app.properties
-locales/fr/fr.properties
+locales/fr/app.properties
 locales/locales.ini
 
