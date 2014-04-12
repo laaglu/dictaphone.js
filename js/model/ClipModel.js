@@ -47,34 +47,18 @@ define(['backbone', 'model/dbconfig', 'model/Samples', 'moment', 'Logger'],
         return moment(+this.get('creationDate')).format('lll');
       },
       getDuration: function() {
-        var duration = [];
-        var t = this.get('duration');
-        var s = ~~t;
-        var d = ~~(s / (24 * 3600));
-        if (d > 0) {
-          duration.push(d);
-          duration.push(' d');
-        }
-        s -= d * 24 * 3600;
-        var h = ~~(s / 3600);
-        if (d > 0 || h > 0) {
-          duration.push(h);
-          duration.push('h ');
-          s -= h * 3600;
-        }
-        var m = ~~(s / 60);
-        if (d > 0 || h > 0 || m > 0) {
-          duration.push(m);
-          duration.push('m ');
-        }
-        s = s % 60;
-        duration.push(s);
-        var ms = ~~((t - Math.floor(t))*10);
-        duration.push('.');
-        duration.push(ms);
+        var duration, ms, format;
 
-        duration.push('s');
-        return duration.join('');
+        duration = this.get('duration');
+        ms = ~~(duration * 1000);
+        if (ms < 60000) {
+          format = 's.S';
+        } else if (ms < 3600000) {
+          format = 'm:ss.S';
+        } else {
+          format = 'H:mm:ss.S';
+        }
+        return moment.utc(ms).format(format);
       },
 
       /**

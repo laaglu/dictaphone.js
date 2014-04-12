@@ -33,8 +33,8 @@ requirejs.config({
     }
   }
 });
-require(['backbone', 'DictaphoneRouter', 'modernizr', 'view/PrereqView'],
-  function (backbone, DictaphoneRouter, Modernizr, PrereqView) {
+require(['backbone', 'DictaphoneRouter', 'modernizr', 'view/PrereqView', 'moment'],
+  function (backbone, DictaphoneRouter, Modernizr, PrereqView, moment) {
 
     var started = false,
 
@@ -60,6 +60,7 @@ require(['backbone', 'DictaphoneRouter', 'modernizr', 'view/PrereqView'],
               navigator.msGetUserMedia);
 
             // The app starts here
+            moment.lang(navigator.language || navigator.userLanguage);
             new DictaphoneRouter();
             Backbone.history.start();
           } else {

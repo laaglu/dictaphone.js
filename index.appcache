@@ -20,5 +20,6 @@ js/main.js
 locales/en/app.properties
 locales/es/app.properties
 locales/fr/app.properties
+locales/zh_CN/app.properties
 locales/locales.ini
 
