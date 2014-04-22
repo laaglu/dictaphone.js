@@ -1,5 +1,5 @@
 {
-  "version": "1.0.5",
+  "version": "1.0.6",
   "name": "Dictaphone",
   "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
   "developer": {
@@ -20,13 +20,17 @@
   },
   "default_locale": "en",
   "locales": {
-    "fr": {
-      "name": "Dictaphone",
-      "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier"
+    "de": {
+      "name": "Diktaphon",
+      "description": "Ein digitales Diktaphon für das Web im Allgemeinen und Firefox OS im Speziellen"
     },
     "es": {
       "name": "Dictáfono",
       "description": "Una aplicación de grabación de voz digital para la web en general y FirefoxOS en particular"
+    },
+    "fr": {
+      "name": "Dictaphone",
+      "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier"
     },
     "zh_CN": {
       "name": "Dictaphone",

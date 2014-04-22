@@ -17,6 +17,7 @@ img/icons/icon-128.png
 img/icons/icon-256.png
 js/vendor/l10n.js
 js/main.js
+locales/de/app.properties
 locales/en/app.properties
 locales/es/app.properties
 locales/fr/app.properties
