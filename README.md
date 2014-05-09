@@ -3,7 +3,7 @@ Dictaphone.js is a digital dictaphone application for the web in general and Fir
 
 This github repository contains the full code of the application. You can use also the repository to view/file bug reports and feature requests
 
-Users can download the app and read the user guide at: [http://www.fos-apps.org/]
+Users can download the app and read the user guide at: [fos-apps.org](http://www.fos-apps.org/)
 They may also want to run the app directly from the [Firefox Marketplace](https://marketplace.firefox.com/app/dictaphone/)
 
 # Build
