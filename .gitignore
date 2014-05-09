@@ -8,4 +8,6 @@ js/view/template/MenuTemplate.js
 js/view/template/PlayTemplate.js
 js/view/template/PrereqTemplate.js
 js/view/template/RecordTemplate.js
+node_modules
+bower_components
 

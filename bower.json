@@ -1,0 +1,54 @@
+{
+  "name": "dictaphone",
+  "version": "1.0.6",
+  "homepage": "http://fos-apps.org",
+  "authors": [
+    "Lukas Laag <laaglu@gmail.com>"
+  ],
+  "main" : "app/main.js",
+  "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
+  "keywords": [
+    "sound",
+    "clip",
+    "player",
+    "recorder",
+    "illimited",
+    "storage",
+    "webaudio",
+    "api",
+    "indexeddb",
+    "html5",
+    "firefox",
+    "firefoxos",
+    "open",
+    "web",
+    "apps",
+    "marketplace",
+    "customizeable"
+  ],
+  "license": "GPL-3.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webL10n" : "",
+    "jquery" : "~1.10.2",
+    "backbone" : "~1.1.2",
+    "underscore" : "~1.5.2",
+    "indexeddb-backbonejs-adapter" : "",
+    "moment" : "~2.6.0",
+    "handlebars" : "~1.1.0"
+  },
+  "overrides": {
+    "underscore" : {
+      "main":"underscore.js"
+    },
+    "indexeddb-backbonejs-adapter" : {
+      "main":"backbone-indexeddb.js"
+    }
+  }
+}

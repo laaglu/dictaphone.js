@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html class='no-js' manifest='index.appcache'>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <title data-l10n-id='title'></title>
+  <meta name='description' content='Dictaphone'>
+  <link rel="icon" type="image/png" href="img/icons/icon-32.png" />
+  <link rel='stylesheet' type='text/css' href='app.css'>
+
+  <link rel='prefetch' type='application/l10n' href='locales/locales.ini'/>
+  <script src='vendor.js'></script>
+  <script src='app.js'></script>
+  <script>require('main');</script>
+
+</head>
+
+<body role='application'>
+<section id='loadingView' role='region'>
+  <div>
+    <h3 data-l10n-id='load'></h3>
+    <progress></progress>
+  </div>
+</section>
+<section id='prereqView' role='region' class='hidden'>
+  <!--
+  <header>
+    <h1 data-l10n-id='title'></h1>
+  </header>
+  <header><h2 data-l10n-id="requirements1"></h2></header>
+  <ul>
+    {{#each features}}
+      <li><span>{{this}}</span></li>
+    {{/each}}
+  </ul>
+  <header><h2 data-l10n-id="requirements2"></h2></header>
+-->
+</section>
+<section id='factoryResetView' role='region' class='hidden'>
+  <!--
+<div>
+  <h3 data-l10n-id='reset'></h3>
+  <progress value="{{index}}" max="{{length}}"></progress>
+</div>-->
+</section>
+<section data-type='sidebar' id='menuView'>
+  <!--
+  <header>
+    <h1 data-l10n-id='commands'></h1>
+  </header>
+  <nav>
+    <ul>
+      <li><a href='#/record/{{id}}' data-l10n-id='newClip'></a></li>
+      <li><a href='#/list' data-l10n-id='clipList'></a></li>
+      <li><a href='#/factoryReset' data-l10n-id='reset'></a></li>
+      <li><a href='#/about' data-l10n-id='information'></a></li>
+    </ul>
+  </nav>-->
+</section>
+
+<section id='playView' role='region' class='hright' data-type='card'>
+  <!--
+  <header>
+    <a href='#/menu'><span class='icon icon-menu'>Show sidebar</span></a>
+    <a href='#/play/{{clip.id}}'><span class='icon icon-menu'>Hide sidebar</span></a>
+    <h1 data-l10n-id='title'></h1>
+  </header>
+  <article class="scrollable">
+    <ul class='compact'>
+      <li>
+        <label data-l10n-id='name'></label>
+        <input type='text' data-l10n-id='name' placeholder='' maxLength='50' value='{{clip.name}}'/>
+      </li>
+      <li class="requireTallScreen">
+        <label data-l10n-id='duration'></label>
+        <input readonly type='text' data-l10n-id='duration' maxLength='50' value='{{duration}}'/>
+      </li>
+      <li>
+        <label data-l10n-id='volume'></label>
+        <div id="volumeSlider" role="slider" aria-valuemin="0" aria-valuenow="{{volume}}" aria-valuemax="1" aria-valuetext="volume slider">
+          <label class="icon icon-volume-min">0</label>
+          <label class="icon icon-volume-max">1</label>
+          <div>
+            <progress value="{{volume}}" max="1"></progress>
+            <button class="slider">handler</button>
+          </div>
+        </div>
+      </li>
+      <li>
+        <label data-l10n-id='position'></label>
+        <div id="positionSlider" role="slider" aria-valuemin="0" aria-valuenow="{{position}}" aria-valuemax="{{clip.duration}}" aria-valuetext="position slider">
+          <label class="icon">0</label>
+          <label class="icon">{{clip.duration}}</label>
+          <div>
+            <progress value="0" max="{{clip.duration}}"></progress>
+            <button class="slider">handler</button>
+          </div>
+        </div>
+      </li>
+      <div id="tapedeck2">
+        <a id="tapedeck2a" role="button"><span class='icon {{#if playing}}icon-play{{else}}icon-pause{{/if}}'></span></a>
+        <a id="tapedeck2b" role="button" pressed="{{#if loop}}true{{else}}false{{/if}}"><span class='icon icon-loop'></span></a>
+      </div>
+    </ul>
+  </article>
+  <div role='toolbar'>
+    <ul>
+      <li>
+        <a href='#/erase/{{clip.id}}' role='button'><span class='action-icon delete'>Previous</span></a>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <a href='#/previous' role='button'><span class='action-icon browser-back'>Previous</span></a>
+      </li>
+      <li>
+        <a href='#/next' role='button'><span class='action-icon browser-forward'>Next</span></a>
+      </li>
+    </ul>
+  </div>-->
+</section>
+
+<section id='recordView' role='region' class='hidden' data-type='card'>
+  <!--
+<header>
+    <a href='#/menu'><span class='icon icon-menu'>Show sidebar</span></a>
+    <a href='#/record/{{clip.id}}'><span class='icon icon-menu'>Hide sidebar</span></a>
+    <h1 data-l10n-id='title'></h1>
+  </header>
+  <ul class='compact'>
+    <li>
+      <label data-l10n-id='name'></label>
+      <input type='text' data-l10n-id='name' placeholder='' maxLength='50' value='{{clip.name}}'/>
+    </li>
+    <li>
+      <label data-l10n-id='duration'></label>
+      <input readonly type='text' data-l10n-id='duration' maxLength='50' value='{{duration}}'/>
+    </li>
+    <a role="button" data-type="tapedeck"><span class='icon {{#if recording}}icon-stop{{else}}icon-record{{/if}}'></span></a>
+  </ul>-->
+</section>
+
+<section id='clipListView' role='region' class='hidden' data-type='card'>
+
+  <!--
+<header>
+  <a href='#/menu'><span class='icon icon-back'>Show sidebar</span></a>
+  <menu type='toolbar'>
+    <a href='#/record'><span class='icon icon-mic'>Record</span></a>
+  </menu>
+  <h1 data-l10n-id='clipList'></h1>
+</header>
+<article class="scrollable">
+  <section data-type="list">
+    <ul>
+      <li>
+        <a href='#/{{#if recording}}record{{else}}play{{/if}}/{{id}}'>
+          <div>
+            <p><span role='name'>{{name}}</span><img class='state' style='visibility:{{#if icon}}visible{{else}}hidden{{/if}};' {{#if icon}}src='{{icon}}'{{/if}}></p>
+            <p><span>{{creationDate}}</span><span class='duration'>{{duration}}</span></p>
+          </div>
+        </a>
+      <li>
+        <a href='#/{{#if recording}}record{{else}}play{{/if}}/{{id}}'>
+          <div>
+            <p><span role='name'>{{name}}</span><img class='state' style='visibility:{{#if icon}}visible{{else}}hidden{{/if}};' {{#if icon}}src='{{icon}}'{{/if}}></p>
+            <p><span>{{creationDate}}</span><span class='duration'>{{duration}}</span></p>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </section>
+</article>-->
+
+</section>
+
+<section id='aboutView' role='region' class='info hidden' data-type='card'>
+  <!--
+   <header>
+    <a href='#/menu'><span class='icon icon-back'>Back</span></a>
+    <h1 data-l10n-id='information'></h1>
+  </header>
+  <article class="scrollable">
+    <div role='main'>
+      <ul>
+        <li>
+          <small>Lukas Laag</small>
+          <span data-l10n-id='coding'></span>
+        </li>
+        <li>
+          <small data-l10n-id='graphics-value'></small>
+          <span data-l10n-id='graphics'></span>
+        </li>
+        <li>
+          <small>{{version}}</small>
+          <span data-l10n-id='version'></span>
+        </li>
+        <li>
+          <label>
+            <a href='#/releaseNotes' role='button' data-l10n-id='releaseNotes'></a>
+          </label>
+        </li>
+        <li>
+          <label>
+            <a href='#/legal' role='button' data-l10n-id='legal-info'></a>
+          </label>
+        </li>
+      </ul>
+      <section>
+        <header>
+          <h2 data-l10n-id='debugLogs'></h2>
+        </header>
+        <ul>
+          <li>
+            <label class="pack-switch">
+              <input id="debugLogs" type="checkbox" {{#if debugLogs}}checked{{/if}}>
+              <span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <header>
+          <h2 data-l10n-id='releaseMic'></h2>
+        </header>
+        <ul>
+          <li>
+            <label class="pack-switch">
+              <input id="releaseMic" type="checkbox" {{#if releaseMic}}checked{{/if}}>
+              <span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+      <section data-type='installation' {{#unless install}}class='hidden'{{/unless}}>
+        <header>
+          <h2 data-l10n-id='install'></h2>
+        </header>
+        <ul>
+          <li data-type='description' data-l10n-id='installTxt'></li>
+          <li>
+            <label>
+              <a href='#/install' role='button' data-l10n-id='installBtn'></a>
+            </label>
+          </li>
+          <li data-type='error'>{{error}}</li>
+        </ul>
+      </section>
+      <section data-type='upgrade' {{#unless update}}class='hidden'{{/unless}}>
+        <header>
+          <h2 data-l10n-id='update'></h2>
+        </header>
+        <ul>
+          <li>
+            <label>
+              <a href='#/update' role='button' data-l10n-id='updateBtn' data-l10n-args='{"version" : "{{updateVersion}}"}'></a>
+            </label>
+          </li>
+          <li data-type='error'>{{error}}</li>
+        </ul>
+      </section>
+    </div>
+  </article>
+  <div id="arrow_box" class="hidden ios">
+    <h3 data-l10n-id='iosmsg1'></h3>
+    <p data-l10n-id='iosmsg2'></p>
+  </div>
+  -->
+</section>
+
+<section id='releaseNotesView' role='region' class='info hidden' data-type='card'>
+  <header>
+    <a href='#/about'><span class='icon icon-back'>Back</span></a>
+    <h1 data-l10n-id='releaseNotes'></h1>
+  </header>
+  <div role='main'><article class="scrollable"></article></div>
+</section>
+
+<section id='legalView' role='region' class='info hidden' data-type='card'>
+  <header>
+    <a href='#/about'><span class='icon icon-back'>Back</span></a>
+    <h1 data-l10n-id='legal-info'></h1>
+  </header>
+  <div role='main'>
+    <ul>
+      <li>
+        <label>
+          <a href='#/gpl' role='button' data-l10n-id='gpl'></a>
+        </label>
+      </li>
+      <li>
+        <label>
+          <a href='#/source' role='button' data-l10n-id='source'></a>
+        </label>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section id='gplView' role='region' class='info hidden' data-type='card'>
+  <header>
+    <a href='#/legal'><span class='icon icon-back'>Back</span></a>
+    <h1 data-l10n-id='gpl'></h1>
+  </header>
+  <div role='main'><article class="scrollable"></article></div>
+</section>
+
+<section id='sourceView' role='region' class='info hidden' data-type='card'>
+  <header>
+    <a href='#/legal'><span class='icon icon-back'>Back</span></a>
+    <h1 data-l10n-id='source'></h1>
+  </header>
+  <div role='main'><article class="scrollable"></article></div>
+</section>
+
+</body>
+</html>

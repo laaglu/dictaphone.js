@@ -1,0 +1,431 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+  background-color: #fff;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* View transition rules */
+.htransition {
+  transition: transform 1s ease;
+  -moz-transition: -moz-transform 0.5s ease;
+  -webkit-transition: -webkit-transform 0.5s ease;
+}
+
+.hleft {
+  transform: translateX(0%);
+  -moz-transform: translateX(0%);
+  -webkit-transform: translateX(0%);
+}
+
+.hmid {
+  transform: translateX(80%);
+  -moz-transform: translateX(80%);
+  -webkit-transform: translateX(80%);
+}
+
+.hright {
+  transform: translateX(100%);
+  -moz-transform: translateX(100%);
+  -webkit-transform: translateX(100%);
+}
+
+.hidden {
+  display:none;
+}
+
+.zmid {
+  z-index: 100;
+}
+
+.ztop {
+  z-index: 160;
+}
+
+/* Icon and menu button placement in section header*/
+
+section[data-type='card'] > header:first-child > a {
+  width: 6rem;
+}
+section[data-type='card'] > header:first-child > a .icon {
+  background-position: center center;
+  width: 4rem;
+}
+section[data-type='card'] > header:first-child > a .icon:after {
+  width: 4rem;
+}
+section[data-type='card'] > header:first-child > a {
+  background-position: 4rem center;
+}
+section[data-type='card'] > header:first-child h1 {
+  margin-left: 5rem;
+}
+
+
+/*Toggle bewteen the two header buttons depending on the inactive2 class */
+#clipListView.hmid > header > a:first-child,
+#clipListView:not(.hmid) > header > a:not(:first-child),
+#playView.hmid > header > a:first-child,
+#playView:not(.hmid) > header > a:not(:first-child),
+#recordView.hmid > header > a:first-child,
+#recordView:not(.hmid) > header > a:not(:first-child) {
+  display:none;
+}
+
+/* Play and record view */
+
+@media (max-height: 480px) {
+  #playView .requireTallScreen {
+    display: none;
+  }
+}
+
+#playView, #recordView {
+  background: white;
+  position: fixed;
+  top: 0;
+  left:0;
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Text color for duration input*/
+#playView input[data-l10n-id="duration"], #recordView input[data-l10n-id="duration"] {
+  color:gray;
+}
+
+div[role="slider"] > label.icon-volume-min {
+  background-image: url(./embedded/range_icons_volume_min.png);
+}
+
+div[role="slider"] > label.icon-volume-max {
+  background-image: url(./embedded/range_icons_volume_min.png);
+}
+
+.icon-record {
+  background-image: url(./embedded/media-record.svg);
+}
+.icon-play {
+  background-image: url(./embedded/media-play.svg);
+}
+.icon-stop {
+  background-image: url(./embedded/media-stop.svg);
+}
+.icon-pause {
+  background-image: url(./embedded/media-pause.svg);
+}
+.icon-loop {
+  background-image: url(./embedded/media-playback-loop.svg)
+}
+.playing {
+  background-image: url(./embedded/media-play-a.svg)
+}
+.recording {
+  background-image: url(./embedded/media-record-a.svg)
+}
+
+section[role="region"] > header:first-child .icon-mic {
+  background-image: url(./embedded/microphone.svg);
+}
+a[data-type='tapedeck'] {
+  width:100%;
+  height:80px;
+  margin-top:1.5rem;
+}
+
+a[data-type='tapedeck'] > span {
+  background-position: center center;
+  background-repeat: no-repeat;
+  width:100%;
+  height:80px;
+  display:block;
+}
+
+#tapedeck2 {
+  width:100%;
+  height:80px;
+  position:relative;
+}
+
+#tapedeck2 span {
+  background-position: center center;
+  background-repeat: no-repeat;
+  position:absolute;
+  width:100%;
+  height:100%;
+  left:0;
+}
+
+#tapedeck2a {
+  left:0;
+  width:calc(70% - 10px);
+  height:100%;
+  position:absolute;
+}
+#tapedeck2b {
+  right:0;
+  width:30%;
+  height:100%;
+  position:absolute;
+}
+
+#tapedeck2b[pressed='true'] {
+  border-color: #008AAA;
+  background: none repeat scroll 0% 0% / auto 100% #008AAA;
+  color: #333;
+}
+
+/*List View*/
+#clipListView {
+  position:absolute;
+  top:0;
+  background: white;
+  width:100%;
+  height: 100%;
+  line-height: 1em;
+  font-size: 2.2rem;
+}
+
+#clipListView > article {
+  height: calc(100% - 5rem);
+}
+
+.scrollable {
+  overflow: scroll;
+  height: 100%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  position: relative;
+}
+
+[data-type='list'] li {
+  background:white;
+  transition: height 1s ease;
+}
+
+[data-type='list'] li div {
+  position:absolute;
+  top:0;
+  left:1rem;
+  right:1rem;
+  height:100%;
+}
+
+.duration {
+  position:absolute;
+  right:0;
+}
+
+
+.state {
+  position:absolute;
+  right:0;
+  top:0;
+  height:3rem;
+  width:3rem;
+}
+
+
+
+/* About view, Legal View, GPL View, Source View*/
+
+#aboutView {
+  z-index:110;
+}
+.info {
+  background: white;
+  position:absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  line-height: 1em;
+  font-size: 2.2rem;
+}
+
+.info ul {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+
+.info div[role="main"] {
+  position:absolute;
+  width:100%;
+  height:100%;
+}
+
+.info ul li {
+  position: relative;
+  border-bottom: 0.1rem solid #e6e6e3;
+  color: #000;
+  -moz-box-sizing: border-box;
+  min-height: 6rem;
+}
+
+.info ul li > a,
+.info ul li > span {
+  display: block;
+  text-decoration: none;
+  outline: 0;
+  color: #000;
+  -moz-box-sizing: border-box;
+  height: 6rem;
+  font-size: 1.9rem;
+  line-height: 6rem;
+  padding: 0 3rem;
+}
+
+.info ul li.disabled > a {
+  color: #797e80;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* description + value on the same line */
+.info ul li > a span {
+  position: absolute;
+  right: 3rem;
+  color: #505859;
+}
+
+/* text ellipsis */
+.info ul li > * {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* sublines */
+.info ul li > small {
+  position: absolute;
+  left: 3rem;
+  right: 3rem;
+  top: 50%;
+  padding-top: 0.4rem;
+  font-size: 1.4rem;
+  color: #505859;
+  /* click/tap events should be caught by the <a> element below the <small> */
+  pointer-events: none;
+}
+
+.info ul li > label {
+  position: absolute;
+  left: 3rem;
+  right: 3rem;
+  top: 1.1rem;
+}
+
+/* required for empty elements like Bluetooth */
+.info ul li > small:not(:empty) + a,
+.info ul li > small:not(:empty) + span {
+  line-height: 4.4rem;
+}
+
+.info dl > * {
+  font-size: 1.6rem;
+}
+
+.info dl dt {
+  padding-left: 3rem;
+  font-weight: bold;
+  border-bottom: 0.1rem dotted #e6e6e3;
+}
+
+.info dl dd {
+  margin: 0;
+  padding: 1rem 3rem;
+  border-bottom: 0.1rem solid #e6e6e3; /* same as "ul li" */
+}
+
+.info ul li[data-type='description'] {
+  padding: 1rem 3rem;
+  font-size: 1.6rem;
+  line-height: 2.3rem;
+  white-space: normal;
+  -moz-hyphens: auto;
+}
+
+.info ul li[data-type='error'] {
+  color:red;
+  padding: 1rem 3rem;
+  font-size: 1.6rem;
+}
+
+/* IO installation popup */
+#arrow_box {
+  background: #B3BECD;
+  border: 4px solid #7086A3;
+  padding: 1.5rem;
+  font-size: 1.6rem;
+}
+
+#arrow_box:after, #arrow_box:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+#arrow_box:after {
+  border-color: rgba(179, 190, 205, 0);
+  border-top-color: #B3BECD;
+  border-width: 30px;
+  left: 50%;
+  margin-left: -30px;
+}
+
+#arrow_box:before {
+  border-color: rgba(112, 134, 163, 0);
+  border-top-color: #7086A3;
+  border-width: 36px;
+  left: 50%;
+  margin-left: -36px;
+}
+
+#arrow_box.ios {
+  position: fixed;
+  left: 48px;
+  bottom: 100px;
+  -webkit-transform: translateZ(0); // activate the GPU
+}
+
+/* Loading View */
+#loadingView {
+  z-index:110;
+}
+#prereqView {
+  z-index:120;
+  font-weight: 400;
+  font-size: 1.5rem;
+}
+
+#loadingView, #factoryResetView, #prereqView {
+  position:absolute;
+  background:white;
+  width:100%;
+  height:100%;
+}
+
+#loadingView div, #factoryResetView div {
+  color:gray;
+  text-align: center;
+  top:0;
+  bottom:0;
+  left:0;
+  right:0;
+  margin:auto;
+  height:5em;
+  position:absolute;
+  line-height: 1em;
+  font-size: 2.2rem;
+}
