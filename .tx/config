@@ -2,15 +2,15 @@
 host = https://www.transifex.com
 
 [dictaphone.app_properties]
-file_filter = locales/<lang>/app.properties
-source_file = locales/en/app.properties
+file_filter = assets/locales/<lang>/app.properties
+source_file = assets/locales/en/app.properties
 source_lang = en
 type = MOZILLAPROPERTIES
 minimum_perc = 80
 
 [dictaphone.manifest_properties]
-file_filter = locales/<lang>/manifest.properties
-source_file = locales/en/manifest.properties
+file_filter = assets/locales/<lang>/manifest.properties
+source_file = assets/locales/en/manifest.properties
 source_lang = en
 type = MOZILLAPROPERTIES
 minimum_perc = 50

@@ -49,6 +49,9 @@
     },
     "indexeddb-backbonejs-adapter" : {
       "main":"backbone-indexeddb.js"
+    },
+    "moment" : {
+      "main":"moment+lang.js"
     }
   }
 }

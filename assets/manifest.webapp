@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6",
+  "version": "1.0.7",
   "name": "Dictaphone",
   "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
   "developer": {
@@ -35,6 +35,10 @@
     "zh_CN": {
       "name": "Dictaphone",
       "description": "一款适用于所有Web平台，特别是Firefox OS平台的数字录音应用"
+    },
+    "zh_TW": {
+      "name": "Dictaphone",
+      "description": "一套供 Firefox OS 與其他網頁平台使用的數位錄音軟體"
     }
   },
   "permissions": {

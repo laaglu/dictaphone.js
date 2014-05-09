@@ -11,7 +11,10 @@ exports.config = {
         'app.js': function(path) {
           return /^app/.test(path);
         },
-        'vendor.js':/^(?!app)/
+        'vendor.js': function(path) {
+          //console.log('VENDOR', path);
+          return /^(?!app)/.test(path);
+        }
       },
       order: {
         before: [
