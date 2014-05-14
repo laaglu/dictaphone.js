@@ -52,6 +52,10 @@ var RELEASE_MIC = 'releaseMic',
       releaseMic = value;
     }
   };
+if (releaseMic === null) {
+  env.setReleaseMic('true');
+}
+
 if (Modernizr.webaudio) {
   env.context = window.webkitAudioContext ? new webkitAudioContext() : new AudioContext();
 }

@@ -33,8 +33,10 @@ var FactoryResetView = require('view/FactoryResetView');
 var ViewBase = require('view/ViewBase');
 var LazyView = require('view/LazyView');
 var AboutView = require('view/AboutView');
+var SettingsView = require('view/SettingsView');
 var logger = require('Logger');
 var StatsLogger = require('StatsLogger');
+var env = require('./AudioEnv');
 
 module.exports = Backbone.Router.extend({
   routes: {
@@ -47,12 +49,13 @@ module.exports = Backbone.Router.extend({
     'previous':                   'previous',
     'factoryReset':               'factoryReset',
     'about':                      'about',
+    'settings':                   'settings',
+    'translations':               'translations',
     'legal':                      'legal',
     'install':                    'install',
     'update':                     'update',
     'releaseNotes':               'releaseNotes',
-    'gpl':                        'gpl',
-    'source':                     'source'
+    'gpl':                        'gpl'
   },
 
   initialize : function() {
@@ -195,6 +198,7 @@ module.exports = Backbone.Router.extend({
 
       var countReady = function countReady(model) {
         var done = function done() {
+          env.setReleaseMic('true');
           this.record(clipModels.currentId());
         }.bind(this);
 
@@ -225,11 +229,29 @@ module.exports = Backbone.Router.extend({
     viewStack.showView(this.aboutView);
   },
 
+  settings: function settings() {
+    logger.log('settings');
+    if (!this.settingsView) {
+      this.settingsView = new SettingsView().render();
+    }
+    viewStack.showView(this.settingsView);
+  },
+
+  translations: function translations() {
+    logger.log('translations');
+    if (!this.translationsView) {
+      this.translationsView = new LazyView({el : $('#translationsView')[0], path:'/data/translations.html'}).render();
+    }
+    viewStack.showView(this.translationsView);
+  },
+
   legal: function() {
     logger.log('legal');
     if (!this.legalView) {
-      this.legalView = new ViewBase({el : $('#legalView')[0]});
-    }
+      this.legalView = new ViewBase({
+        el : $('#legalView')[0], 
+        events: { 'click #repo' : 'openUrl' }});
+    } 
     viewStack.showView(this.legalView);
   },
 
@@ -247,14 +269,6 @@ module.exports = Backbone.Router.extend({
       this.gplView = new LazyView({el : $('#gplView')[0], path:'/data/gpl-3.0-standalone.html'}).render();
     }
     viewStack.showView(this.gplView);
-  },
-
-  source: function() {
-    logger.log('source');
-    if (!this.sourceView) {
-      this.sourceView = new LazyView({el : $('#sourceView')[0], path:'/data/source.html'}).render();
-    }
-    viewStack.showView(this.sourceView);
   },
 
   install : function() {

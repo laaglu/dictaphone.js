@@ -16,7 +16,10 @@
  * along with dictaphone.js.  If not, see http://www.gnu.org/licenses/
  **********************************************/
 
-/* global Backbone*/
+/* global Backbone, MozActivity, window*/
+
+var Modernizr = require('modernizr.custom.24918');
+var logger = require('Logger');
 
 module.exports = Backbone.View.extend({
   /**
@@ -63,5 +66,33 @@ module.exports = Backbone.View.extend({
   },
   hasClass: function hasClass(className) {
     return this.$el.hasClass(className);
+  },
+
+  openUrl : function openUrl(evt) {
+    var target, activity, href, windowName;
+    
+    logger.log('openUrl', evt);
+    target = evt.target;
+    href = target.dataset.href;
+    windowName = target.id;
+    if (Modernizr.webactivities) {
+      activity = new MozActivity({
+        // Ask for the "pick" activity
+        name: "view",
+
+        // Provide the data required by the filters of the activity
+        data: {
+          type: "url",
+          url : href
+        }
+      });
+
+      activity.onerror = function onerror() {
+        logger.error(this.error);
+      };
+
+    } else {
+      window.open(href, windowName);
+    }
   }
 });

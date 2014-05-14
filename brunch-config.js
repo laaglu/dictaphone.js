@@ -42,7 +42,7 @@ exports.config = {
     appcache: {
       manifestFile: 'index.appcache',
       network:[],
-      ignore:/manifest\.properties$/
+      ignore:/manifest\.properties|translation\.properties$/
     }
   },
   server: {

@@ -10,4 +10,4 @@ js/view/template/PrereqTemplate.js
 js/view/template/RecordTemplate.js
 node_modules
 bower_components
-
+npm-debug.log

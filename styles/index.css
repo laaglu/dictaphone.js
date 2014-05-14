@@ -233,9 +233,6 @@ a[data-type='tapedeck'] > span {
 
 /* About view, Legal View, GPL View, Source View*/
 
-#aboutView {
-  z-index:110;
-}
 .info {
   background: white;
   position:absolute;
@@ -397,6 +394,16 @@ a[data-type='tapedeck'] > span {
   left: 48px;
   bottom: 100px;
   -webkit-transform: translateZ(0); // activate the GPU
+}
+
+.link {
+  pointer-events:all;
+  text-decoration:underline;
+  cursor: pointer;
+ 
+}
+.link:hover {
+  color:blue;
 }
 
 /* Loading View */

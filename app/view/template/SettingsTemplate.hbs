@@ -1,0 +1,67 @@
+<section id='settingsView' role='region' class='info hidden' data-type='card'>
+  <header>
+    <a href='#/menu'><span class='icon icon-back'>Back</span></a>
+    <h1 data-l10n-id='settings'></h1>
+  </header>
+  <article class="scrollable">
+    <div role='main'>
+      <section>
+        <header>
+          <h2 data-l10n-id='debugLogs'></h2>
+        </header>
+        <ul>
+          <li>
+            <label class="pack-switch">
+              <input id="debugLogs" type="checkbox" {{#if debugLogs}}checked{{/if}}>
+              <span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <header>
+          <h2 data-l10n-id='releaseMic'></h2>
+        </header>
+        <ul>
+          <li>
+            <label class="pack-switch">
+              <input id="releaseMic" type="checkbox" {{#if releaseMic}}checked{{/if}}>
+              <span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+      <section data-type='installation' {{#unless install}}class='hidden'{{/unless}}>
+        <header>
+          <h2 data-l10n-id='install'></h2>
+        </header>
+        <ul>
+          <li data-type='description' data-l10n-id='installTxt'></li>
+          <li>
+            <label>
+              <a href='#/install' role='button' data-l10n-id='installBtn'></a>
+            </label>
+          </li>
+          <li data-type='error'>{{error}}</li>
+        </ul>
+      </section>
+      <section data-type='upgrade' {{#unless update}}class='hidden'{{/unless}}>
+        <header>
+          <h2 data-l10n-id='update'></h2>
+        </header>
+        <ul>
+          <li>
+            <label>
+              <a href='#/update' role='button' data-l10n-id='updateBtn' data-l10n-args='{"version" : "{{updateVersion}}"}'></a>
+            </label>
+          </li>
+          <li data-type='error'>{{error}}</li>
+        </ul>
+      </section>
+    </div>
+  </article>
+  <div id="arrow_box" class="hidden ios">
+    <h3 data-l10n-id='iosmsg1'></h3>
+    <p data-l10n-id='iosmsg2'></p>
+  </div>
+</section>
