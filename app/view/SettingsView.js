@@ -47,7 +47,7 @@ module.exports = ViewBase.extend({
     var manifestVersion = this.model.get('manifestVersion');
     var install = this.model.get('state') === 'uninstalled';
     var update = this.model.get('state') === 'installed' &&
-     manifestVersion !== null &&
+     typeof manifestVersion === 'string' &&
      manifestVersion !== resourceVersion;
     var tpl = $(this.template({
       updateVersion: resourceVersion,
