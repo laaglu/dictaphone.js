@@ -133,16 +133,15 @@ Recorder.prototype.stop = function stop(options) {
 
   env.releaseMediaSource(this.inputNode);
 
-  this.inputNode = null;
-  this.gainNode = null;
-  this.processorNode = null;
-
   // Save remaining samples
   this.flush();
   this.clip.recorder = null;
 
   // Update the clip object
-  this.clip.save({ sampleSize: env.bufferSize}, options);
+  this.clip.save({ sampleSize: this.inputNode.bufferSize}, options);
+  this.inputNode = null;
+  this.gainNode = null;
+  this.processorNode = null;
   this.clip.trigger('clip:state');
 };
 

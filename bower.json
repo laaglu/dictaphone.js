@@ -5,7 +5,7 @@
   "authors": [
     "Lukas Laag <laaglu@gmail.com>"
   ],
-  "main" : "app/main.js",
+  "main": "app/main.js",
   "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
   "keywords": [
     "sound",
@@ -35,23 +35,24 @@
     "tests"
   ],
   "dependencies": {
-    "webL10n" : "",
-    "jquery" : "~1.10.2",
-    "backbone" : "~1.1.2",
-    "underscore" : "~1.5.2",
-    "indexeddb-backbonejs-adapter" : "",
-    "moment" : "~2.6.0",
-    "handlebars" : "~1.1.0"
+    "webL10n": "",
+    "jquery": "~1.10.2",
+    "backbone": "~1.1.2",
+    "underscore": "~1.5.2",
+    "indexeddb-backbonejs-adapter": "",
+    "moment": "~2.6.0",
+    "handlebars": "~1.1.0",
+    "rsvp": "~3.0.6"
   },
   "overrides": {
-    "underscore" : {
-      "main":"underscore.js"
+    "underscore": {
+      "main": "underscore.js"
     },
-    "indexeddb-backbonejs-adapter" : {
-      "main":"backbone-indexeddb.js"
+    "indexeddb-backbonejs-adapter": {
+      "main": "backbone-indexeddb.js"
     },
-    "moment" : {
-      "main":"moment+lang.js"
+    "moment": {
+      "main": "moment+lang.js"
     }
   }
 }

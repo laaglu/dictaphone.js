@@ -17,7 +17,7 @@
  **********************************************/
 'use strict';
 
-/* global document, navigator*/
+/* global document, navigator, RSVP, Blob*/
 
 var DeviceStorageUtils = require('./DeviceStorageUtils');
 var samples = require('model/Samples');
@@ -35,114 +35,108 @@ FileHandleWriter.prototype.exporter = null;
  * @type {FileHandle} The FileHandle used for writing
  */
 FileHandleWriter.prototype.fileHandle = null;
-/**
- * @type {LockedFile} The LockedFile used for writing
- */
-FileHandleWriter.prototype.lockedFile = null;
 
 /**
- * Returns a default name for the exported clip
+ * Returns a default name for the exported clip as a Promise
  */
-FileHandleWriter.prototype.defaultExportName = function defaultExportName(options) {
-  var computeName = function(files) {
-    var exportName = DeviceStorageUtils.uniqueName(this.exporter.clip.get('name') + '.wav', files);
-    if (typeof(options.success) === 'function') {
-      options.success(exportName);
-    }
-  }.bind(this);
-
-  DeviceStorageUtils.exists({
-    storage:'music',
-    path:'dictaphone',
-    callback: function(b) {
-      if (b) {
-        DeviceStorageUtils.ls({
-            storage:'music',
-            path:'dictaphone',
-            success: computeName,
-            error: options.error || logger.error
-          }
-        );
-      } else {
-        computeName({});
-      }
-    }.bind(this)
-  });
-};
-
-/**
- * Prepares the writer for writing
- * success: callback if the write operation succeeds
- * error: callback if the write operation fails
- * @param options
- */
-FileHandleWriter.prototype.initialize = function initialize(options) {
-  var getLockedFile = function getLockedFile(fileHandle) {
-      this.fileHandle = fileHandle;
-      this.lockedFile = fileHandle.open('readwrite');
-      if (typeof options.success === 'function') {
-        options.success();
-      }
-    }.bind(this),
-    getFileHandle = function getFileHandle() {
-      samples.exportSamples({
-        name: this.exporter.fileName,
-        success:getLockedFile,
-        error: options.error
-      });
-    }.bind(this);
-  DeviceStorageUtils.exists({
+FileHandleWriter.prototype.defaultExportName = function defaultExportName() {
+  var self = this;
+  return DeviceStorageUtils.exists({
       storage:'music',
-      path:'dictaphone' + '/' + this.exporter.fileName,
-      callback: function(exists) {
-        if (!exists || confirm(document.webL10n.get('overwwrite', {fileName: this.exporter.fileName}))) {
-          getFileHandle();
-        }
-      }.bind(this)
-    }
-  );
+      path:'dictaphone'})
+    .then(function(exists) {
+      return exists ? DeviceStorageUtils.ls({ storage:'music', path:'dictaphone '}) : {};
+    })
+    .then(function computeName(files) {
+      return DeviceStorageUtils.uniqueName(self.exporter.clip.get('name') + '.wav', files);
+    });
 };
 
 /**
- * Writes a buffer of data into the wav file
+ * Prepares the writer for writing as a Promise
+ * Return true if the writer is ready, false to abort
+ */
+FileHandleWriter.prototype.initialize = function initialize() {
+  logger.log('initialize');
+  var self = this;
+  return DeviceStorageUtils.exists({
+      storage:'music',
+      path:'dictaphone' + '/' + this.exporter.fileName})
+    .then(function(exists) {
+      if (!exists || confirm(document.webL10n.get('overwwrite', {fileName: self.exporter.fileName}))) {
+        return samples.exportSamples(self.exporter.fileName)
+          .then(function(fileHandle) {
+            self.fileHandle = fileHandle;
+            return true;
+          });
+      }
+      return false;
+    });
+};
+
+/**
+ * Writes a buffer of data into the wav file as a Promise
  * @param options
- * success: callback if the write operation succeeds
- * error: callback if the write operation fails
  * data: {ArrayBuffer} a buffer containing the data to write
  * updateSize: {boolean} true to update the number of processed bytes
  */
 FileHandleWriter.prototype.writeData = function writeData(options) {
-  var lastLoaded, appendReq;
-
-  lastLoaded = 0;
-  appendReq = this.lockedFile.append(options.data);
-  appendReq.onsuccess = function() {
-    var flushReq;
-    flushReq = this.lockedFile.flush();
-    flushReq.onsuccess = options.success;
-    flushReq.onerror = options.error;
-  }.bind(this);
-  appendReq.onerror = options.error;
-  appendReq.onprogress = function(status) {
-    if (options.updateSize) {
-      this.exporter.processedSize += (status.loaded - lastLoaded) / 4;
-    }
-    lastLoaded = status.loaded;
-  }.bind(this);
+  var self = this,
+    lockedFile = this.fileHandle.open('readwrite');
+  return new RSVP.Promise(function(resolve, reject) {
+    var lastLoaded, appendReq;
+    console.log('LOCKEDFILE1', lockedFile.active);
+    lastLoaded = 0;
+    appendReq = lockedFile.append(options.data);
+    appendReq.onsuccess = function() {
+      var flushReq;
+      console.log('LOCKEDFILE2', lockedFile.active);
+      flushReq = lockedFile.flush();
+      flushReq.onsuccess = function() {
+        console.log('LOCKEDFILE3', lockedFile.active);
+        resolve();
+      };
+      flushReq.onerror = reject;
+    };
+    appendReq.onerror = reject;
+    appendReq.onprogress = function(status) {
+      if (options.updateSize) {
+        console.log('LOADED', status.loaded);
+        self.exporter.processedSize += (status.loaded - lastLoaded) / 4;
+        console.log('PROCESSED_SIZE', self.exporter.processedSize);
+      }
+      lastLoaded = status.loaded;
+    };
+  });
 };
 
-FileHandleWriter.prototype.finalize = function finalize(options) {
-  var getFileReq;
+/**
+ * Finalizes the writing as a Promise
+ */
+FileHandleWriter.prototype.finalize = function finalize() {
+  logger.log('-----FINALIZE------');
+  var self = this;
+  return new RSVP.Promise(function(resolve, reject) {
+    var getFileReq;
 
-  getFileReq = this.fileHandle.getFile();
-  getFileReq.onerror = options.error || console.error;
-  getFileReq.onsuccess = function () {
-    var storage, addNamedReq;
-    storage = navigator.getDeviceStorage('music');
-    addNamedReq = storage.addNamed(getFileReq.result, 'dictaphone/' + this.exporter.fileName);
-    addNamedReq.onerror = options.error || console.error;
-    addNamedReq.onsuccess = options.success;
-  }.bind(this);
+    getFileReq = self.fileHandle.getFile();
+    getFileReq.onerror = reject;
+    getFileReq.onsuccess = function() {
+      logger.log('getFileReq', getFileReq.result, 'dictaphone/' + self.exporter.fileName);
+      var storage, addNamedReq;
+      storage = navigator.getDeviceStorage('music');
+      //addNamedReq = storage.addNamed(getFileReq.result, 'dictaphone/' + self.exporter.fileName);
+      addNamedReq = storage.addNamed(new Blob([self.exporter.createHeader(0, 44100)], { type: 'audio/wav'}), 'dictaphone/' + self.exporter.fileName);
+      addNamedReq.onerror = function(err) {
+        console.log('ERROR', err);
+        reject(err);
+      };
+      addNamedReq.onsuccess = function() {
+        console('SUCCESS ' + this.result);
+      };
+    };
+  });
+
 };
 
 module.exports = FileHandleWriter;

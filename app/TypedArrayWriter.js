@@ -17,7 +17,7 @@
  **********************************************/
 'use strict';
 
-/* global Blob, URL, document, $, window */
+/* global Blob, URL, document, $, window, RSVP */
 
 function TypedArrayWriter(exporter) {
   var totalSize;
@@ -52,29 +52,21 @@ TypedArrayWriter.prototype.offset = 0;
 /**
  * Returns a default name for the exported clip
  */
-TypedArrayWriter.prototype.defaultExportName = function defaultExportName(options) {
-  if (typeof(options.success) === 'function') {
-    options.success(this.exporter.clip.get('name') + '.wav');
-  }
+TypedArrayWriter.prototype.defaultExportName = function defaultExportName() {
+  return Promise.resolve(this.exporter.clip.get('name') + '.wav');
 };
 
 /**
- * Prepares the writer for writing
- * success: callback if the write operation succeeds
- * error: callback if the write operation fails
- * @param options
+ * Prepares the writer for writing as a Promise
+ * Return true if the writer is ready, false to abort
  */
-TypedArrayWriter.prototype.initialize = function initialize(options) {
-  if (typeof options.success === 'function') {
-    options.success();
-  }
+TypedArrayWriter.prototype.initialize = function initialize() {
+  return RSVP.Promise.resolve(true);
 };
 
 /**
- * Writes a buffer of data into the wav file
+ * Writes a buffer of data into the wav file as a Promise
  * @param options
- * success: callback if the write operation succeeds
- * error: callback if the write operation fails
  * data: {ArrayBuffer} a buffer containing the data to write
  * updateSize: {boolean} true to update the number of processed bytes
  */
@@ -84,12 +76,13 @@ TypedArrayWriter.prototype.writeData = function writeData(options) {
   if (options.updateSize) {
     this.exporter.processedSize += options.data.byteLength / 4;
   }
-  if (typeof options.success === 'function') {
-    options.success();
-  }
+  return RSVP.Promise.resolve();
 };
 
-TypedArrayWriter.prototype.finalize = function finalize(options) {
+/**
+ * Finalizes the writing as a Promise
+ */
+TypedArrayWriter.prototype.finalize = function finalize() {
   var blob = new Blob([this.buffer], { type: 'audio/wav'}),
     section = $('#sourceView'),
     link = document.createElement('a'),
@@ -103,9 +96,7 @@ TypedArrayWriter.prototype.finalize = function finalize(options) {
   evt.initMouseEvent("click", true, true, window,
     0, 0, 0, 0, 0, false, false, false, false, 0, null);
   link.dispatchEvent(evt);
-  if (typeof options.success === 'function') {
-    options.success();
-  }
+  return RSVP.Promise.resolve();
 };
 
 module.exports = TypedArrayWriter;

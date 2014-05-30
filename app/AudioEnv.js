@@ -18,38 +18,44 @@
 
 'use strict';
 
-/* global navigator, localStorage, window, webkitAudioContext, AudioContext */
+/* global navigator, localStorage, window, webkitAudioContext, AudioContext, RSVP */
 
 var Modernizr = require('modernizr.custom.24918');
-var logger = require('Logger');
 
 var RELEASE_MIC = 'releaseMic',
   releaseMic = localStorage.getItem(RELEASE_MIC),
+  mediaSource,
   env;
 navigator.getMedia = ( navigator.getUserMedia ||
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia ||
   navigator.msGetUserMedia);
-env = {
-  getMediaSource: function getMediaSource(options) {
-    if (!env.mediaSource || env.mediaSource.mediaStream.ended || env.getReleaseMic()) {
-      navigator.getMedia (
-        {
-          video: false,
-          audio: true
-        },
-        function(localMediaStream) {
-          env.mediaSource = env.context.createMediaStreamSource(localMediaStream);
-          env.bufferSize = options.bufferSize || 4096;
-            options.success(env.mediaSource);
-        },
-        options.error || logger.error
-      );
-    } else {
-      options.success(env.mediaSource);
-    }
+
+var mediaSourceFactory = {
+  getSource : function getMediaSource(options) {
+    return new RSVP.Promise(function(resolve, reject) {
+      if (!mediaSource || mediaSource.mediaStream.ended || env.getReleaseMic()) {
+        navigator.getMedia (
+          {
+            video: false,
+            audio: true
+          },
+          function(localMediaStream) {
+            mediaSource = env.context.createMediaStreamSource(localMediaStream);
+            mediaSource.bufferSize = (options && options.bufferSize) || 4096;
+            resolve(mediaSource);
+          },
+          function(err) {
+            reject(err);
+          }
+        );
+      } else {
+        resolve(mediaSource);
+      }
+    });
   },
-  releaseMediaSource: function(source) {
+
+  releaseSource: function releaseMediaSource(source) {
     var mediaStream;
     if (env.getReleaseMic() && (mediaStream = source.mediaStream)) {
       mediaStream.stop();
@@ -58,7 +64,42 @@ env = {
         mediaStream.ended = true;
       }
     }
+  }
+};
+
+var oscillatorSourceFactory = {
+  getSource : function getOscillatorSource(options) {
+    var freq = 1000, 
+      source = env.context.createOscillator();
+    source.frequency.setValueAtTime(freq, 0);
+    source.type = "sine";
+    source.playing = true;
+    source.bufferSize = (options && options.bufferSize) || 4096;
+    source.start();
+    (function wobble() {
+      var currTime = env.context.currentTime;
+      freq = freq === 1000 ? 100 : 1000;
+      source.frequency.exponentialRampToValueAtTime(freq, currTime + 0.5);
+      if (source.playing) {
+        setTimeout(wobble, 500);
+      }
+    })();
+    return RSVP.Promise.resolve(source);
   },
+
+  releaseSource: function releaseOscillatorSource(source) {
+    if (source.playing) {
+      source.stop();
+      source.playing = false;
+    }
+  }
+};
+
+var factory = oscillatorSourceFactory;
+
+env = {
+  getMediaSource: factory.getSource,
+  releaseMediaSource: factory.releaseSource,
   getReleaseMic : function getReleaseMic() {
     return releaseMic === 'true';
   },

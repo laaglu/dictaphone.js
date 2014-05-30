@@ -22,7 +22,7 @@
 
 var ViewBase = require('./ViewBase');
 var PlayTemplate = require('./template/PlayTemplate');
-var utils = require('seekbars');
+var seekbars = require('seekbars').utils;
 var logger = require('Logger');
 
 module.exports = ViewBase.extend({
@@ -58,9 +58,9 @@ module.exports = ViewBase.extend({
     // Keep references to mutable DOM elements
     this.playButton = this.$('#tapedeck2a span');
     this.loopButton = this.$('#tapedeck2b');
-    utils.seekbars.init();
-    this.volumeSlider = utils.seekbars.bind(document.getElementById('volumeSlider'));
-    this.positionSlider = utils.seekbars.bind(document.getElementById('positionSlider'));
+    seekbars.init();
+    this.volumeSlider = seekbars.bind(document.getElementById('volumeSlider'));
+    this.positionSlider = seekbars.bind(document.getElementById('positionSlider'));
     this.name = this.$('input[data-l10n-id="name"]');
 
     this.update(this.model);

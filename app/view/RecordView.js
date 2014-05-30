@@ -66,16 +66,19 @@ module.exports = ViewBase.extend({
       }.bind(this);
       this.model.recorder.stop({ success: terminate, error:logger.error });
     } else {
-      var ready = function ready(localMediaStream) {
-        this.recordButton.addClass('icon-stop');
-        this.recordButton.removeClass('icon-record');
-        clipModels.nextId();
-        clipModels.add(this.model);
-        this.model.recorder = new Recorder({model: this.model});
-        this.model.recorder.start(localMediaStream);
-        this.update(this.model);
-      }.bind(this);
-      env.getMediaSource({success: ready });
+      env.getMediaSource()
+        .then(function ready(localMediaStream) {
+          this.recordButton.addClass('icon-stop');
+          this.recordButton.removeClass('icon-record');
+          clipModels.nextId();
+          clipModels.add(this.model);
+          this.model.recorder = new Recorder({model: this.model});
+          this.model.recorder.start(localMediaStream);
+          this.update(this.model);
+        }.bind(this))
+        .then(null, function(err) {
+          logger.log(err);
+        });
     }
   },
   update: function update(model) {

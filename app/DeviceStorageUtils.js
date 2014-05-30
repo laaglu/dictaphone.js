@@ -17,34 +17,34 @@
  **********************************************/
 'use strict';
 
-/* global navigator */
+/* global navigator, RSVP */
 
 module.exports = {
   /**
-   * List files in a directory
+   * List files in a directory as a Promise
    * @param options
    * storage: device storage name (music, images...)
    * path: path for the enumerate call
    * options: path for the options call
-   * success: a success callback(File[])
-   * error: error callback(Error)
    */
   ls : function ls(options) {
-    var files = {},
-      storage = navigator.getDeviceStorage(options.storage),
-      enumReq = storage.enumerate(options.path, options.options);
-    enumReq.onsuccess = function onsuccess() {
-      var file = this.result, path, name;
-      if (file) {
-        path = file.name;
-        name = path.substring( 1 + path.lastIndexOf('/'));
-        files[name] = file;
-        enumReq.continue();
-      } else if (typeof options.success === 'function') {
-        options.success(files);
-      }
-    };
-    enumReq.onerror = options.error;
+    return new RSVP.Promise(function(resolve, reject) {
+      var files = {},
+        storage = navigator.getDeviceStorage(options.storage),
+        enumReq = storage.enumerate(options.path, options.options);
+      enumReq.onsuccess = function onsuccess() {
+        var file = this.result, path, name;
+        if (file) {
+          path = file.name;
+          name = path.substring( 1 + path.lastIndexOf('/'));
+          files[name] = file;
+          enumReq.continue();
+        } else if (typeof options.success === 'function') {
+          resolve(files);
+        }
+      };
+      enumReq.onerror = reject;
+    });
   },
   /**
    * Returns a name derived from the supplied name and which
@@ -72,26 +72,23 @@ module.exports = {
   },
 
   /**
-   * Returns true if a file exists, false otherwise
+   * Tests if a file exists as a Promise.
    * @param options
    * storage: device storage name (music, images...)
-   * options: path for the options call
-   * callback: a success callback(boolean)
    */
   exists: function exists(options) {
-    var storage, getReq;
-    storage = navigator.getDeviceStorage(options.storage);
-    getReq = storage.get(options.path);
-    getReq.onsuccess = function onsuccess() {
-      if (typeof options.callback === 'function') {
-        options.callback(this.result != null);
-      }
-    };
-    getReq.onerror = function() {
-      if (typeof options.callback === 'function') {
-        options.callback(false);
-      }
-    };
+    return new RSVP.Promise(function(resolve) {
+      var storage, getReq;
+      storage = navigator.getDeviceStorage(options.storage);
+      getReq = storage.get(options.path);
+      getReq.onsuccess = function onsuccess() {
+        resolve(this.result != null);
+      };
+      getReq.onerror = function() {
+        // silently ignore the error
+        resolve(false);
+      };
+    });
   }
 };
 

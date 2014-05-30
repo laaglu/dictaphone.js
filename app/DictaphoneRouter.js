@@ -38,7 +38,7 @@ var AboutView = require('view/AboutView');
 var SettingsView = require('view/SettingsView');
 var logger = require('Logger');
 var StatsLogger = require('StatsLogger');
-var env = require('./AudioEnv');
+var env = require('AudioEnv');
 
 module.exports = Backbone.Router.extend({
   routes: {
@@ -203,14 +203,9 @@ module.exports = Backbone.Router.extend({
           viewStack.showView(this.exportView, true);
         }.bind(this);
         if (!clipModel.exporter) {
-          Exporter.createExporter({
-            clip: clipModel,
-            success: function(exporter) {
-              clipModel.exporter = exporter;
-              exporterReady();
-            },
-            error: logger.error
-          });
+          Exporter.createExporter({ clip: clipModel })
+            .then(exporterReady)
+            .then(null, logger.error);
         } else {
           exporterReady();
         }

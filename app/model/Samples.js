@@ -18,7 +18,7 @@
 
 'use strict';
 
-/* global window */
+/* global window, RSVP */
 
 var dbconfig = require('./dbconfig');
 var logger = require('Logger');
@@ -35,7 +35,7 @@ var samples = {
    * success: a callback to invoke upon successful database initialization
    * error: a callback to invoke for any database related error
    */
-  init : function (options) {
+  init : function init(options) {
     // Open the database
     var request = indexedDB.open(dbconfig.id, dbconfig.migrations[0].version);
 
@@ -55,11 +55,11 @@ var samples = {
     });
   },
 
-  sampleStoreTransaction: function(mode) {
+  sampleStoreTransaction: function sampleStoreTransaction(mode) {
     var transaction = samples.db.transaction(['sample'], mode);
     return transaction.objectStore('sample');
   },
-  clipStoreTransaction: function(mode) {
+  clipStoreTransaction: function clipStoreTransaction(mode) {
     var transaction = samples.db.transaction(['clip'], mode);
     return transaction.objectStore('clip');
   },
@@ -67,7 +67,7 @@ var samples = {
    * Writes an array of samples
    * @param array
    */
-  createSamples: function(array) {
+  createSamples: function createSamples(array) {
     var store = this.sampleStoreTransaction('readwrite');
     for (var i = 0, len = array.length; i < len; i++) {
       store.add(array[i]);
@@ -81,7 +81,7 @@ var samples = {
    * from: {number} where to start in the clip
    * to: {number} where to start in the clip
    */
-  readSamples: function(options) {
+  readSamples: function readSamples(options) {
     //console.log('readSamples', options);
     var clipid = +options.clipid;
     var transaction = samples.db.transaction(['sample'], 'readonly');
@@ -94,13 +94,39 @@ var samples = {
     return transaction;
   },
   /**
+   * Reads several samples using a cursor as a Promise
+   * @param options
+   * success: { function({IDBCursor}) } a callback to invoke for each sample read
+   * clipid: {number} the id of the clip to read
+   * from: {number} where to start in the clip
+   * to: {number} where to start in the clip
+   */
+  readSamples2: function readSamples2(options) {
+    var clipid = +options.clipid;
+    var transaction = samples.db.transaction(['sample'], 'readonly');
+
+    return { 
+      transaction:transaction,
+      promise: new RSVP.Promise(function(resolve, reject) {
+        //console.log('readSamples', options);
+        var store = transaction.objectStore('sample');
+        var boundKeyRange = IDBKeyRange.bound([clipid, options.from || 0], [clipid, options.to || Number.MAX_VALUE]);
+        var req = store.openCursor(boundKeyRange);
+        req.onsuccess = function(event) {
+          resolve(event.target);
+        };
+        req.onerror = reject;
+      }) 
+    };
+  },
+  /**
    * Reads a single samples
    * @param options
    * success: { function({Object}) } a callback to invoke for each sample read
    * clipid: {number} the id of the clip to read
    * offset: {number} where to start in the clip
    */
-  readSample: function(options) {
+  readSample: function readSample(options) {
     var clipid = +options.clipid;
     var store = this.sampleStoreTransaction('readonly');
     var req = store.get([clipid, options.offset || 0]);
@@ -118,7 +144,7 @@ var samples = {
    * from: {number} where to start in the clip
    * to: {number} where to start in the clip
    */
-  deleteSamples: function(options) {
+  deleteSamples: function deleteSamples(options) {
     var clipid = +options.clipid;
     var store = this.sampleStoreTransaction('readwrite');
     var boundKeyRange = IDBKeyRange.bound([clipid, options.from || 0], [clipid, options.to || Number.MAX_VALUE]);
@@ -150,6 +176,15 @@ var samples = {
         }
       };
     }.bind(this);
+  },
+  exportSamples: function exportSamples(filename) {
+    return new Promise(function(resolve, reject) {
+      var fileReq = samples.db.mozCreateFileHandle(filename, 'audio/wav');
+      fileReq.onerror = reject;
+      fileReq.onsuccess = function mozCreateFileHandleSuccess() {
+        resolve(fileReq.result);
+      };
+    }); 
   }
 };
 module.exports = samples;

@@ -33,21 +33,21 @@ var logger = require('Logger');
  */
 function Exporter(options) {
   this.clip = options.clip;
+  options.clip.exporter = this;
   this.writer = (Modernizr.devicestorage && Modernizr.filehandle) ? new FileHandleWriter(this) : new TypedArrayWriter(this);
   this.bufferSize = +this.clip.get('sampleSize') * ( options.batchSize || 10 );
 }
 
+/**
+ * Creates the exporter, as a Promise
+ */
 Exporter.createExporter = function createExporter(options) {
   var exporter = new Exporter(options);
-  exporter.writer.defaultExportName({
-    success: function(fileName) {
+  return exporter.writer.defaultExportName()
+    .then(function(fileName) {
       exporter.fileName = fileName;
-      if (typeof(options.success) === 'function') {
-        options.success(exporter);
-      }
-    },
-    error: options.error
-  });
+      return exporter;
+    });
 };
 
 /**
@@ -71,7 +71,7 @@ Exporter.prototype.processedSize = 0;
  */
 Exporter.prototype.bufferSize = 0;
 /**
- * The clip size processed so far
+ * The transaction used to read the samples
  * @type {IDBTransaction}
  */
 Exporter.prototype.transaction = null;
@@ -87,7 +87,8 @@ Exporter.prototype.exporting = false;
 Exporter.prototype.fileName = null;
 
 Exporter.prototype.export_ = function export_() {
-  var totalSize = +this.clip.get('totalSize'),
+  var self = this,
+    totalSize = +this.clip.get('totalSize'),
     sampleRate = +this.clip.get('sampleRate'),
     samplesBuffer = new ArrayBuffer(4 * this.bufferSize),
     samplesView = new Int16Array(samplesBuffer),
@@ -95,7 +96,7 @@ Exporter.prototype.export_ = function export_() {
     processSamples = function processSamples(cursor) {
       var samples, i, len, bufferL, bufferR, val;
 
-      if (this.transaction) {
+      if (self.transaction) {
         if (cursor) {
           samples = cursor.value;
 
@@ -111,53 +112,49 @@ Exporter.prototype.export_ = function export_() {
           offset += samples.bufferL.length;
           cursor.continue();
         } else {
-          this.transaction = null;
-          this.writer.writeData({
-            data:offset === this.bufferSize ? samplesBuffer : samplesBuffer.slice(0, 4 * offset),
-            updateSize:true,
-            success: writeSamples,
-            error: logger.error});
+          self.transaction = null;
+          self.writer.writeData({
+            data:offset === self.bufferSize ? samplesBuffer : samplesBuffer.slice(0, 4 * offset),
+            updateSize:true})
+          .then(writeSamples)
+          .then(null, logger.error);
         }
       }
-    }.bind(this),
+    },
     writeSamples = function writeSamples() {
-      if (this.processedSize < totalSize) {
+      if (self.processedSize < totalSize) {
         // Not done yet, read next batch of samples
         offset = 0;
-        this.transaction = samples.readSamples({
-          clipid: this.clip.id,
+        self.transaction = samples.readSamples({
+          clipid: self.clip.id,
           success:processSamples,
-          from:this.processedSize,
-          to:Math.min(totalSize, this.processedSize + this.bufferSize)
+          from:self.processedSize,
+          to:Math.min(totalSize, self.processedSize + self.bufferSize)
         });
       } else {
         // Done, finalize the export
-        this.writer.finalize({
-          success: finalizeExport,
-          error: logger.error
+        self.writer.finalize()
+         .then(function finalizeExport() {
+           self.exporting = false;
         });
       }
-    }.bind(this),
-    finalizeExport = function finalizeExport() {
-      this.exporting = false;
-    }.bind(this),
-    writerHeader = function writerHeader() {
-      // Reset the internal state
-      this.processedSize = 0;
-      this.exporting = true;
+    };
 
-      this.writer.writeData({
-        data : Exporter.createHeader(totalSize, sampleRate),
-        updateSize:false,
-        success: writeSamples,
-        error: logger.error });
-    }.bind(this);
+  self.exporting = true;
+  self.writer.initialize()
+    .then(function(proceed) {
+      if (proceed) {
+        // Reset the internal state
+        self.processedSize = 0;
 
-  this.writer.initialize({
-    success: writerHeader,
-    error: logger.error
-  });
-
+        // Write the header;
+        return self.writer.writeData({
+          data : self.createHeader(totalSize, sampleRate),
+          updateSize:false})
+        .then(writeSamples);
+      }
+    })
+    .then(null, logger.error);
 };
 
 /**
@@ -166,7 +163,7 @@ Exporter.prototype.export_ = function export_() {
  * @param {number} sampleRate
  * @returns {ArrayBuffer}
  */
-Exporter.createHeader = function createHeader(totalSize, sampleRate) {
+Exporter.prototype.createHeader = function createHeader(totalSize, sampleRate) {
   var header = new ArrayBuffer(44),
     headerView = new DataView(header),
     writeHeader = function writeHeader(offset, str) {
