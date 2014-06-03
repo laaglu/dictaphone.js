@@ -18,11 +18,13 @@
 
 'use strict';
 
-/* global Backbone, $, document, location */
+/* global Backbone, $, document, RSVP */
 
 var viewStack = require('ViewStack');
-var Player = require('Player');
-var Exporter = require('Exporter');
+var commands = require('cmd/Commands');
+var PlayCmd = require('cmd/PlayCmd');
+var RecordCmd = require('cmd/RecordCmd');
+var ExportCmd = require('cmd/ExportCmd');
 var install = require('model/Installation');
 var clipModels = require('model/ClipModels');
 var samples = require('model/Samples');
@@ -60,33 +62,52 @@ module.exports = Backbone.Router.extend({
     'releaseNotes':               'releaseNotes',
     'gpl':                        'gpl'
   },
+  currentPath : '',
+  execute: function(callback, args) {
+    var newPath = [], result;
+    if (callback && callback.name) {
+      newPath.push(callback.name);
+    }
+    if (args && args.length > 1) {
+      Array.prototype.push.call(newPath, args.slice(0, args.length -1));
+    }
+    if (callback) {
+      result = callback.apply(this, args);
+      if ('rollback' === result) {
+        console.log('Rollback:', this.currentPath);
+        if (newPath !== this.currentPath) {
+          this.navigate(this.currentPath, {trigger: true, replace: true});
+        }
+      } else {
+        this.currentPath = newPath.join('/');
+        console.log('Commit:', this.currentPath);
+      }
+    }
+  },
 
   initialize : function() {
-    var stage1 = function stage1() {
-      console.log('Stage 1 init complete');
-      samples.init({success: stage2.bind(this), error:console.error});
-    };
-    var stage2 = function stage2() {
-      console.log('Stage 2 init complete');
-      this.menuView = new MenuView().render();
+    var self = this;
+    return new RSVP.Promise(function(resolve, reject) {
+      clipModels.fetch({
+        success: resolve, 
+        error: reject});
+      })
+      .then(samples.init)
+      .then(function() {
+        self.menuView = new MenuView().render();
 
-      // The current clip index to power back / forward buttons in the play view
-      this.clipIndex = 0;
+        // The current clip index to power back / forward buttons in the play view
+        self.clipIndex = 0;
 
-      // If clips are available, show the clip list, otherwise record a new clip
-      if(clipModels.length) {
-        this.list();
-      } else {
-        this.record(clipModels.currentId());
-      }
-      $('#loadingView').addClass('hidden');
-      install.check({
-        onerror: function onerror(e) {
-          logger.error(e);
+        // If clips are available, show the clip list, otherwise record a new clip
+        if(clipModels.length) {
+          self.list();
+        } else {
+          self.record(clipModels.currentId());
         }
-      });
-    };
-    clipModels.fetch({success: stage1.bind(this), error:console.error});
+        $('#loadingView').addClass('hidden');
+        install.check({ onerror: logger.error });
+      }).then(null, logger.error);
   },
 
   menu: function() {
@@ -103,64 +124,77 @@ module.exports = Backbone.Router.extend({
     if (playView) {
       entry = viewStack.peek();
       if (entry && entry.view === playView) {
-        return playView.model;
+        return playView.model.clip;
       }
     }
     return null;
   },
 
   play: function play(clipid) {
-    var clipModel;
+    var clip, cmd;
 
     logger.log('play', clipid);
     if (clipid) {
       if (!this.playView) {
         this.playView = new PlayView();
       }
-      clipModel = clipModels.get(clipid);
-      if (clipModel) {
-        if (this.playView.model !== clipModel) {
-          this.playView.model = clipModel;
-          if (!clipModel.player) {
-            clipModel.player = new Player({clip: clipModel, logger:new StatsLogger(clipModel)});
-          }
+      clip = clipModels.get(clipid);
+      if (clip) {
+        cmd = commands.get(clipid, PlayCmd.cmdid);
+        if (!cmd) {
+          cmd = commands.add(new PlayCmd({clip: clip, logger:new StatsLogger(clip)}));
+        }
+        if (this.playView.model !== cmd) {
+          this.playView.model = cmd;
           this.playView.render();
         }
         viewStack.showView(this.playView, true);
+        return 'commit';
       }
     }
+    return 'rollback';
   },
 
   record: function record(clipid) {
-    var clipModel;
+    var clip, cmd;
 
     logger.log('record', clipid);
     if (clipid) {
-
       if (!this.recordView) {
         this.recordView = new RecordView();
       }
-      clipModel = clipModels.get(clipid);
-      if (!clipModel) {
-        clipModel = clipModels.getNewClipModel();
+      clip = clipModels.get(clipid);
+      if (!clip) {
+        if (+clipModels.currentId() !== +clipid) {
+          return 'rollback';
+        }
+        clip = clipModels.getNewClipModel();
       }
-      this.recordView.model = clipModel;
-      this.recordView.render();
+      cmd = commands.get(clipid, RecordCmd.cmdid);
+      if (!cmd) {
+        cmd = commands.add(new RecordCmd({clip: clip}));
+      }
+      if (this.recordView.model !== cmd) {
+        this.recordView.model = cmd;
+        this.recordView.render();
+      }
       viewStack.showView(this.recordView, true);
+      return 'commit';
     }
+    return 'rollback';
   },
 
-  list: function list(callback) {
+  list: function list() {
     logger.log('list');
     if (!this.clipListView) {
       this.clipListView = new ClipListView().render();
     }
     this.clipListView.update();
-    viewStack.showView(this.clipListView, true, callback);
+    return viewStack.showView(this.clipListView, true);
   },
 
   erase: function erase(clipid) {
-    var clipModel;
+    var self = this, clipModel;
 
     logger.log('erase', clipid);
 
@@ -170,46 +204,48 @@ module.exports = Backbone.Router.extend({
         // If clips are available, go back to the clip list, otherwise record a new one
         if (clipModels.length >= 2) {
           // Display the list, then erase in order to have a CSS transition
-          this.list(function() { clipModel.terminate({}); });
+          self.list()
+           .then(function() { return clipModel.terminate(); })
+           .then(null, logger.error);
         } else {
-          clipModel.terminate(
-            {
-              success: function() {
-                this.record(clipModels.currentId());
-              }.bind(this)
-            }
-          );
+          clipModel.terminate()
+           .then(function() { self.navigate('record/' + clipModels.currentId(), {trigger: true, replace: true}); })
+           .then(null, logger.error);
         }
       } else {
-        this.navigate("play/" + clipid, {trigger: true, replace: true});
+        self.navigate("play/" + clipid, {trigger: true, replace: true});
       }
     }
   },
 
   export_: function export_(clipid) {
-    var clipModel;
-
+    var clip, cmd, self = this;
     logger.log('export', clipid);
     if (clipid) {
-
       if (!this.exportView) {
         this.exportView = new ExportView();
       }
-      clipModel = clipModels.get(clipid);
-      if (clipModel) {
-        var exporterReady = function exporterReady() {
-          this.exportView.model = clipModel;
-          this.exportView.render();
-          viewStack.showView(this.exportView, true);
-        }.bind(this);
-        if (!clipModel.exporter) {
-          Exporter.createExporter({ clip: clipModel })
-            .then(exporterReady)
-            .then(null, logger.error);
+      clip = clipModels.get(clipid);
+      if (clip) {
+        cmd = commands.get(clipid, ExportCmd.cmdid);
+        if (!cmd) {
+          cmd = ExportCmd.createExportCmd({ clip: clip })
+            .then(function(cmd) {
+              return commands.add(cmd);
+            });
         } else {
-          exporterReady();
+          cmd = RSVP.Promise.resolve(cmd);
         }
+        cmd
+          .then(function(cmd) {
+            self.exportView.model = cmd;
+            self.exportView.render();
+            viewStack.showView(self.exportView, true);
+          })
+          .then(null, logger.error);
+        return 'commit';
       }
+      return 'rollback';
     }
   },
 
@@ -219,7 +255,7 @@ module.exports = Backbone.Router.extend({
     if (this.clipIndex >= clipModels.length) {
       this.clipIndex = 0;
     }
-    location.hash = '#/play/' + clipModels.at(this.clipIndex).id;
+    this.navigate('play/' + clipModels.at(this.clipIndex).id, {trigger: true, replace: false});
   },
 
   previous: function previous() {
@@ -228,38 +264,35 @@ module.exports = Backbone.Router.extend({
     if (this.clipIndex < 0) {
       this.clipIndex = clipModels.length - 1;
     }
-    location.hash = '#/play/' + clipModels.at(this.clipIndex).id;
+    this.navigate('play/' + clipModels.at(this.clipIndex).id, {trigger: true, replace: false});
   },
 
   factoryReset: function factoryReset() {
+    var self = this;
     logger.log('factoryReset');
     if (confirm(document.webL10n.get('factorySettings'))) {
-      if (!this.factoryResetView) {
-        this.factoryResetView = new FactoryResetView();
+      if (!self.factoryResetView) {
+        self.factoryResetView = new FactoryResetView();
       }
-
-      var countReady = function countReady(model) {
-        var done = function done() {
+      commands.reset()
+        .then(function() {
+          return samples.getCounts();
+        })
+        .then(function(model) {
+          self.factoryResetView.model = model;
+          self.factoryResetView.render();
+          return viewStack.showView(self.factoryResetView, true);
+        })
+        .then(function() {
+          return clipModels.totalWipeOut(self.factoryResetView.model);
+        })
+        .then(function() {
           env.setReleaseMic('true');
-          this.record(clipModels.currentId());
-        }.bind(this);
-
-        var totalWipeOut = function totalWipeOut() {
-          clipModels.totalWipeOut(model, done);
-        }.bind(this);
-
-        this.factoryResetView.model = model;
-        this.factoryResetView.render();
-        viewStack.showView(this.factoryResetView, true, totalWipeOut);
-      }.bind(this);
-
-      var count = function count() {
-        samples.getCounts(countReady);
-      }.bind(this);
-
-      clipModels.stopAll({ success: count, error: logger.error });
+          self.navigate('record/' + clipModels.currentId(), {trigger: true, replace: true});
+        }).
+        then(null, logger.error);
     } else {
-      location.hash = '#/menu';
+      self.navigate('menu/', {trigger: true, replace: true});
     }
   },
 
@@ -316,7 +349,7 @@ module.exports = Backbone.Router.extend({
   install : function install() {
     logger.log('install');
     install.install();
-    location.hash = '#/about';
+    this.navigate('about/', {trigger: true, replace: true});
   },
 
   update : function update() {
@@ -326,7 +359,7 @@ module.exports = Backbone.Router.extend({
     // has older version than manifest updated by the appcache
     // a new mozApp.install is required (so that user can re-approve manifest.webapp)
     install.install();
-    location.hash = '#/about';
+    this.navigate('about/', {trigger: true, replace: true});
   }
 });
 

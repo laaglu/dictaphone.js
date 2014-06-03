@@ -21,6 +21,8 @@
 /*global _, Backbone*/
 
 var logger = require('Logger');
+var commands = require('cmd/Commands');
+var PlayCmd = require('cmd/PlayCmd');
 
 function StatsLogger(clip) {
   this.clip = clip;
@@ -66,7 +68,7 @@ StatsLogger.prototype.log = function log() {
   }
 };
 StatsLogger.prototype.stateChange = function stateChange() {
-  if (this.clip.isPlaying()) {
+  if (commands.isRunning(this.clip.id, PlayCmd.cmdid)) {
     this.reset();
   } else {
     this.dump();

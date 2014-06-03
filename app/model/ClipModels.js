@@ -18,7 +18,7 @@
 
 'use strict';
 
-/*global document, localStorage, Backbone*/
+/*global document, localStorage, Backbone, RSVP*/
 
 var dbconfig = require('./dbconfig');
 var ClipModel = require('./ClipModel');
@@ -57,52 +57,19 @@ var ClipModels = Backbone.Collection.extend({
     this.newClip = null;
     return id;
   },
-  totalWipeOut: function totalWipeOut(status, callback) {
-    var deleteNext = function deleteNext() {
-      if (clipModels.length === 0) {
-        clipModels.reset();
-        localStorage.clear();
-        clipModels.newClip = null;
-        if (typeof callback === 'function') {
-          callback();
+  totalWipeOut: function totalWipeOut(status) {
+    return RSVP.Promise.resolve()
+      .then(function deleteNext() {
+        if (clipModels.length === 0) {
+          clipModels.reset();
+          localStorage.clear();
+          clipModels.newClip = null;
+          return status;
+        } else {
+          return clipModels.at(0).terminate(status)
+            .then(deleteNext);
         }
-        return;
-      }
-      clipModels.at(0).terminate({
-        success: deleteNext,
-        status: status
       });
-    };
-    deleteNext();
-  },
-
-  /**
-   * @param options
-   * success: success callback
-   * error: error callback
-   */
-  stopAll: function stopAll(options) {
-    var stack = [], model;
-
-    // Stop pending playing and recording clips
-    this.each(function(clip /*, key, list*/) {
-      if (clip.isPlaying()) {
-        clip.player.stop();
-      } else if (clip.isRecording()) {
-        stack.push(clip);
-      }
-    });
-
-    var stopRecording = function stopRecording() {
-      if (stack.length) {
-        model = stack.pop();
-        model.recorder.stop({ success: stopRecording, error: options.error });
-      } else if (options && typeof options.success === 'function') {
-        options.success();
-      }
-    }.bind(this);
-
-    stopRecording();
   }
 });
 var clipModels = new ClipModels();

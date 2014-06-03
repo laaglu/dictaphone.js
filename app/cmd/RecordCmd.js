@@ -18,64 +18,69 @@
 
 'use strict';
 
+/* global RSVP */
+
 var samples = require('model/Samples');
-var env = require('./AudioEnv');
+var clipModels = require('model/ClipModels');
+var env = require('AudioEnv');
 
 /**
  * @constructor
  * @param options
  * bufferCapacity: clip length to keep in ram before flushing
- * model: the clip model to record
+ * clip: the clip model to record
  */
-function Recorder(options) {
+function RecordCmd(options) {
   // Store approximately 1 second of sound before flushing to indexed db
   this.bufferCapacity = options.bufferCapacity || 1;
-  this.clip = options.model;
+  this.clip = options.clip;
 }
 
 /**
  * @type {LocalMediaStream}
  */
-Recorder.prototype.inputNode = null;
+RecordCmd.prototype.inputNode = null;
 /**
  * @type {ScriptProcessorNode}
  */
-Recorder.prototype.processorNode = null;
+RecordCmd.prototype.processorNode = null;
 /**
  * @type {GainNode}
  */
-Recorder.prototype.gainNode = null;
+RecordCmd.prototype.gainNode = null;
 /**
  * The recording being recorded
  * @type {ClipModel}
  */
-Recorder.prototype.clip = null;
+RecordCmd.prototype.clip = null;
 /**
- * A buffer of chunks to persist
+ * A buffer of samples to persist
  * @type {[Object]}
  */
-Recorder.prototype.buffer = null;
+RecordCmd.prototype.buffer = null;
 /**
  * Capacity of the buffer is seconds
  * @type {number}
  */
-Recorder.prototype.bufferCapacity = 0;
+RecordCmd.prototype.bufferCapacity = 0;
 /**
- * True if the recorder is recording, false otherwise
+ * True if the command is recording, false otherwise
  * @type {boolean}
  */
-Recorder.prototype.recording = false;
+RecordCmd.prototype.running = false;
 
 /**
- * Creates a web audio API recorder graph with the following structure
+ * Creates a web audio API record command graph with the following structure
  * The microphone output is piped into a 0 gain node to mute it
  * and a processor node to capture the input
  *
  * MediaStreamSource(LocalMediaStream ) ---> GainNode(0) -----------> AudioDestinationNode
  *                                       |-> ScriptProcessorNode -|
  */
-Recorder.prototype.start = function start(sourceNode) {
-  this.recording = true;
+RecordCmd.prototype.start = function start(sourceNode) {
+  this.running = true;
+  clipModels.nextId();
+  clipModels.add(this.clip);
   this.clip.trigger('clip:state');
   var context = env.context;
   this.inputNode = sourceNode;
@@ -90,7 +95,7 @@ Recorder.prototype.start = function start(sourceNode) {
   this.processorNode.connect(context.destination);
 
   var processSample = function processSample(e) {
-    if (this.recording) {
+    if (this.running) {
       var clip = this.clip, sample = {
         clipid: +clip.id,
         bufferL: this.copyBuffer(e.inputBuffer.getChannelData(0)),
@@ -111,46 +116,51 @@ Recorder.prototype.start = function start(sourceNode) {
   this.processorNode.onaudioprocess = processSample;
 };
 
-Recorder.prototype.copyBuffer = function copyBuffer(buffer) {
+RecordCmd.prototype.copyBuffer = function copyBuffer(buffer) {
   var bufferCopy = new Float32Array(buffer.length);
   bufferCopy.set(buffer);
   return bufferCopy;
 };
 
-  /**
- * @param options
- * success: backbone.js success callback
- * error: backbone.js error callback
+/**
+ * Returns a promise which is accomplished when the command has stopped
  */
-Recorder.prototype.stop = function stop(options) {
+RecordCmd.prototype.stop = function stop() {
+  console.log('stop', this);
+  var self = this;
+  return new RSVP.Promise(function(resolve, reject) {
+    self.running = false;
+    // Deactivate the Web Audio API graph
+    self.processorNode.onaudioprocess = null;
+    self.inputNode.disconnect();
+    self.gainNode.disconnect();
+    self.processorNode.disconnect();
 
-  this.recording = false;
-  // Deactivate the Web Audio API graph
-  this.processorNode.onaudioprocess = null;
-  this.inputNode.disconnect();
-  this.gainNode.disconnect();
-  this.processorNode.disconnect();
+    env.releaseMediaSource(self.inputNode);
 
-  env.releaseMediaSource(this.inputNode);
+    // Save remaining samples
+    self.flush();
 
-  // Save remaining samples
-  this.flush();
-  this.clip.recorder = null;
-
-  // Update the clip object
-  this.clip.save({ sampleSize: this.inputNode.bufferSize}, options);
-  this.inputNode = null;
-  this.gainNode = null;
-  this.processorNode = null;
-  this.clip.trigger('clip:state');
+    // Update the clip object
+    self.clip.save(
+      { sampleSize: self.inputNode.bufferSize },
+      { success: function() { resolve(self); },
+        error: function(err) { reject(err); }}
+    );
+    self.inputNode = null;
+    self.gainNode = null;
+    self.processorNode = null;
+    self.clip.trigger('clip:state');
+  });
 };
 
-Recorder.prototype.flush = function flush() {
+RecordCmd.prototype.flush = function flush() {
   if (this.buffer) {
     samples.createSamples(this.buffer);
     this.buffer = null;
     this.clip.trigger('clip:length');
   }
 };
+RecordCmd.cmdid = 'record';
 
-module.exports = Recorder;
+module.exports = RecordCmd;

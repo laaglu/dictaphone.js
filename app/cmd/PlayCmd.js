@@ -18,15 +18,15 @@
 
 'use strict';
 
-/*global _, Backbone*/
+/*global _, Backbone, RSVP*/
 
 var Loader = require('./Loader');
-var env = require('./AudioEnv');
+var env = require('AudioEnv');
 var logger = require('Logger');
 
 /**
- * A WebAudio API player for sound clips stored in an IndexedDB database.
- * The player uses the following audio graph:
+ * A WebAudio API play command for sound clips stored in an IndexedDB database.
+ * The play command uses the following audio graph:
  * AudioBufferSourceNode ---> GainNode() -------> AudioDestinationNode
  * @param options
  * clip: {ClipModel} the clip to replay
@@ -38,8 +38,8 @@ var logger = require('Logger');
  * loop: {boolean} true to play sound in a loop
  * @constructor
  */
-function Player(options) {
-  var player = this;
+function PlayCmd(options) {
+  var playCmd = this;
   this.heartbeat = options.heartbeat || 0.05;
   this.clip = options.clip;
   this.gainNode = env.context.createGain();
@@ -67,16 +67,16 @@ function Player(options) {
   // Define a Web Audio API based scheduler
   this.scheduler = options.scheduler || {
     scheduleSample: function scheduleSample(sample, time) {
-      player.logger.log('schedule', sample, time);
+      playCmd.logger.log('schedule', sample, time);
       var buffer, bufferL, bufferR, source;
-      buffer = env.context.createBuffer(2, sample.bufferL.length, player.clip.get('sampleRate'));
+      buffer = env.context.createBuffer(2, sample.bufferL.length, playCmd.clip.get('sampleRate'));
       bufferL = buffer.getChannelData(0);
       bufferL.set(sample.bufferL);
       bufferR = buffer.getChannelData(1);
       bufferR.set(sample.bufferR);
       source = env.context.createBufferSource();
       source.buffer = buffer;
-      source.connect(player.gainNode);
+      source.connect(playCmd.gainNode);
       source.start(time);
     }
   };
@@ -87,60 +87,60 @@ function Player(options) {
  * The sound clip id
  * @type {ClipModel}
  */
-Player.prototype.clip = null;
+PlayCmd.prototype.clip = null;
 /**
- * The speed at which the player should update seconds)
+ * The speed at which the play command should update seconds)
  * @type {number}
  */
-Player.prototype.heartbeat = 0;
+PlayCmd.prototype.heartbeat = 0;
 /**
  * A timer (usually a webaudio-based timer, but can be also be used
  * to inject a simulated timer)
  * @type {Object}
  */
-Player.prototype.timer = 0;
+PlayCmd.prototype.timer = 0;
 /**
  * A loader to retrieve samples from storage
  * @type {Loader}
  */
-Player.prototype.loader = null;
+PlayCmd.prototype.loader = null;
 /**
  * A scheduler
  * @type {Object}
  */
-Player.prototype.scheduler = null;
+PlayCmd.prototype.scheduler = null;
 /**
  * True to play the clip in an infinite loop
  * @type {boolean}
  */
-Player.prototype.loop = false;
+PlayCmd.prototype.loop = false;
 /**
- * True if the player is playing, false otherwise
+ * True if the command is playing, false otherwise
  * @type {boolean}
  */
-Player.prototype.playing = false;
+PlayCmd.prototype.running = false;
 /**
  * Time when the first scheduled sample started playing in seconds
  * @type {number}
  */
-Player.prototype.startTime = 0;
+PlayCmd.prototype.startTime = 0;
 /**
  * Time when the last scheduled sample will end playing in seconds
  * @type {number}
  */
-Player.prototype.endTime = 0;
+PlayCmd.prototype.endTime = 0;
 /**
  * The position in the clip from the beginning in seconds
  * @type {number}
  */
-Player.prototype.clipTime = 0;
+PlayCmd.prototype.clipTime = 0;
 /**
  * The gain node used to control the volume
  * @type {GainNode}
  */
-Player.prototype.gainNode = 0;
+PlayCmd.prototype.gainNode = 0;
 
-Player.prototype.onheartbeat = function onheartbeat() {
+PlayCmd.prototype.onheartbeat = function onheartbeat() {
   var i, len, samples, sample,
    currentTime = this.timer.getCurrentTime();
 
@@ -179,8 +179,8 @@ Player.prototype.onheartbeat = function onheartbeat() {
   }
 };
 
-Player.prototype.start = function start(clipTime) {
-  this.playing = true;
+PlayCmd.prototype.start = function start(clipTime) {
+  this.running = true;
   this.clip.trigger('clip:state');
   this.clipTime = clipTime;
   this.clip.save({ lastPlayed: Date.now() });
@@ -190,23 +190,27 @@ Player.prototype.start = function start(clipTime) {
   this.timer.start(this.onheartbeat.bind(this), ~~(this.heartbeat * 1000));
 };
 
-Player.prototype.stop = function stop() {
-  if (this.playing) {
-    this.playing = false;
+PlayCmd.prototype.stop = function stop() {
+  console.log('stop', this);
+  if (this.running) {
+    this.running = false;
     // Deactivate the heartbeat
     this.timer.stop();
     this.clip.trigger('clip:state');
   }
+  return RSVP.Promise.resolve(this);
 };
 
-Player.prototype.getVolume = function getVolume() {
+PlayCmd.prototype.getVolume = function getVolume() {
   return this.gainNode.gain.value;
 };
 
-Player.prototype.setVolume = function setVolume(value) {
+PlayCmd.prototype.setVolume = function setVolume(value) {
   this.gainNode.gain.value = value;
 };
 
-_.extend(Player.prototype, Backbone.Events);
-module.exports = Player;
+PlayCmd.cmdid = 'play';
+
+_.extend(PlayCmd.prototype, Backbone.Events);
+module.exports = PlayCmd;
 

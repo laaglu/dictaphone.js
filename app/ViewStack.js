@@ -18,6 +18,8 @@
 
 'use strict';
 
+/* global RSVP*/
+
 function ViewStack() {
   this.stack = [];
 }
@@ -64,7 +66,7 @@ ViewStack.prototype.showMenu = function showMenu() {
   }
 };
 
-ViewStack.prototype.showView = function showView(view, replace, callback) {
+ViewStack.prototype.showView = function showView(view, replace) {
   var topEntry = this.peek(),
     entry = {view:view, replace: replace},
     len = this.stack.length,
@@ -76,23 +78,21 @@ ViewStack.prototype.showView = function showView(view, replace, callback) {
     // Nothing is currently displayed, show the view without transition
     ////////////////////////////////////////////////////////////
     this.stack.push(entry);
-    this.display([
+    return this.display([
       { view: view, visible: false, trans:false, hpos: 'hleft', zpos: 'zmid' },
       { view: view, visible: true }
-    ], callback);
-    return;
+    ]);
   }
   if (topEntry.view === view && view.hasClass('hmid')) {
     ////////////////////////////////////////////////////////////
     // Hide the menu
     ////////////////////////////////////////////////////////////
-    this.display([
+    return this.display([
       // Show the menu with transition
       { view: topEntry.view, trans:true },
       { view: topEntry.view, hpos: 'hleft' },
       { view: topEntry.view, trans:false }
-    ], callback);
-    return;
+    ]);
   }
   if (index !== -1 && !replace) {
     ////////////////////////////////////////////////////////////
@@ -109,17 +109,16 @@ ViewStack.prototype.showView = function showView(view, replace, callback) {
       states.push({ view: this.stack[len - 1].view,  trans:false});
     }
     this.stack.splice(index + 1, len - (index + 1));
-    this.display(states, callback);
-    return;
+    return this.display(states);
   }
 
   if (topEntry.view === view && typeof view.lazyRender === 'function') {
     ////////////////////////////////////////////////////////////
     // Necessary hack because of seekbars
     ////////////////////////////////////////////////////////////
-    this.display([
+    return this.display([
       { view: view, visible: true }
-    ], callback);
+    ]);
 
   } else {
 
@@ -132,45 +131,47 @@ ViewStack.prototype.showView = function showView(view, replace, callback) {
     } else {
       this.stack.push(entry);
     }
-    this.display([
+    return this.display([
       { view: view, visible: false, trans:false, hpos: 'hright', zpos: 'ztop' },
       { view: view, visible: true, trans:true },
       { view: view, hpos: 'hleft' },
       { view: topEntry.view, visible: false },
       { view: view, trans:false, zpos: 'zmid' }
-    ], callback);
+    ]);
   }
 };
 
-ViewStack.prototype.display = function display(states, callback) {
-  var state;
-  if (states.length) {
-    state = states.shift();
-    if (state.hasOwnProperty('hpos')) {
-      state.view.setHPos(state.hpos);
-    }
-    if (state.hasOwnProperty('zpos')) {
-      state.view.setZPos(state.zpos);
-    }
-    if (state.hasOwnProperty('visible')) {
-      state.view.setVisible(state.visible);
-      // Necessary hack because of seekbars
-      // The view must be displayed so that the seekbars have
-      // proper dimensions for initialization
-      if (state.visible && typeof state.view.lazyRender === 'function') {
-        state.view.lazyRender();
+ViewStack.prototype.display = function display(states) {
+  return new RSVP.Promise(function display_(resolve) {
+    var state;
+    if (states.length) {
+      state = states.shift();
+      if (state.hasOwnProperty('hpos')) {
+        state.view.setHPos(state.hpos);
       }
-    }
-    if (state.hasOwnProperty('trans')) {
-      state.view.setHTransition(state.trans);
-    }
-    if (state.hasOwnProperty('hpos') && state.view.hasHTransition()) {
-      state.view.deferTransition(this.display.bind(this, states, callback));
+      if (state.hasOwnProperty('zpos')) {
+        state.view.setZPos(state.zpos);
+      }
+      if (state.hasOwnProperty('visible')) {
+        state.view.setVisible(state.visible);
+        // Necessary hack because of seekbars
+        // The view must be displayed so that the seekbars have
+        // proper dimensions for initialization
+        if (state.visible && typeof state.view.lazyRender === 'function') {
+          state.view.lazyRender();
+        }
+      }
+      if (state.hasOwnProperty('trans')) {
+        state.view.setHTransition(state.trans);
+      }
+      if (state.hasOwnProperty('hpos') && state.view.hasHTransition()) {
+        state.view.deferTransition(display_.bind(this, resolve));
+      } else {
+        state.view.defer(display_.bind(this, resolve));
+      }
     } else {
-      state.view.defer(this.display.bind(this, states, callback));
+      resolve();
     }
-  } else if (typeof(callback) === 'function') {
-    callback();
-  }
+  });
 };
 module.exports = new ViewStack();

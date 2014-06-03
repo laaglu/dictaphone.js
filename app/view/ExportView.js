@@ -17,74 +17,95 @@
  **********************************************/
 'use strict';
 
-/* global document, $, requestAnimationFrame, location*/
+/* global document, $, requestAnimationFrame, window */
 
 var ViewBase = require('./ViewBase');
 var ExportTemplate = require('./template/ExportTemplate');
 var logger = require('Logger');
+var commands = require('cmd/Commands');
+var status = require('status').status;
 
 module.exports = ViewBase.extend({
   el: '#exportView',
   template: ExportTemplate,
   exportButton: null,
+  exportIcon: null,
   events: {
     'click a[data-type="tapedeck"]': 'toggleExport',
-    'change input[data-l10n-id="name"]' : 'updateName'
+    'input input[data-l10n-id="fileName"]' : 'updateName'
   },
   render : function render() {
     var data = {};
-    data.fileName = this.model.exporter.fileName;
-    data.clip = this.model.toJSON();
-    data.exporting = this.model.isExporting();
+    data.fileName = this.model.fileName;
+    data.clip = this.model.clip.toJSON();
+    data.exporting = this.model.running;
     var tpl = $(this.template(data));
     document.webL10n.translate(tpl[0]);
     this.replaceContent(tpl);
 
     this.progress = $('progress');
-    this.exportButton = this.$('a[data-type="tapedeck"] span');
+    this.exportButton = this.$('a[data-type="tapedeck"]');
+    this.exportIcon = $('span', this.exportButton);
     this.fileNameInput = $('input[data-l10n-id="fileName"]');
 
     this.update(this.model);
     return this;
   },
   updateName : function updateName(e) {
-    logger.log('updateName', e);
+    if (e.target.value.length) {
+      if (this.exportButton.attr('aria-disabled')) {
+        this.exportButton.removeAttr('aria-disabled');
+      }
+    } else {
+      if (!this.exportButton.attr('aria-disabled')) {
+        this.exportButton.attr('aria-disabled', 'true');
+      }
+    }
   },
   toggleExport : function toggleExport(e) {
+    var self = this;
     logger.log('toggleExport', e);
-    if (this.model.isExporting()) {
-      this.exportButton.addClass('icon-export');
-      this.exportButton.removeClass('icon-stop');
-      this.fileNameInput.attr('disabled', null);
-      this.model.exporter.abort();
+    if (self.model.running) {
+      self.fileNameInput.prop('disabled', false);
+      self.exportIcon.addClass('icon-export');
+      self.exportIcon.removeClass('icon-stop');
+      self.fileNameInput.attr('disabled', null);
+      self.model.stop()
+        .then(function() {
+          commands.remove(self.model);
+          // Display the clip list view
+          window.router.navigate('list', {trigger: true, replace: true});
+        })
+        .then(null, function(err) {
+          logger.error(err);
+          status.show(document.webL10n.get('exportError', {fileName: err}), 2000);
+        });
     } else {
-      this.exportButton.addClass('icon-stop');
-      this.exportButton.removeClass('icon-export');
-      this.fileNameInput.attr('disabled', 'true');
-      this.model.exporter.export_();
+      self.fileNameInput.prop('disabled', true);
+      self.exportIcon.addClass('icon-stop');
+      self.exportIcon.removeClass('icon-export');
+      self.fileNameInput.attr('disabled', 'true');
+      self.model.export_();
     }
-    this.update(this.model);
+    self.update(self.model);
   },
   update: function update(model) {
     var totalSize, completion;
-    totalSize = +this.model.get('totalSize');
+    totalSize = +this.model.clip.get('totalSize');
     // If the model has changed, do not update the UI
     if (this.model === model) {
-      completion = model.exporter.processedSize / totalSize;
+      completion = model.processedSize / totalSize;
       this.progress.val(completion);
-      console.log('COMPLETION', completion, model.isExporting());
-      if (model.isExporting()) {
+      console.log('COMPLETION', completion, model.running);
+      if (model.running) {
         requestAnimationFrame(update.bind(this, model));
       } else if (completion >= 1) {
-        // Discard the exporter object
-        this.model.exporter = null;
         // Display the clip list view
-        location.hash = '#/list';
+        window.router.list().then(function() {
+          status.show(document.webL10n.get('exportDone', {fileName: model.fileName}), 2000);
+          window.router.navigate('list', {trigger: false, replace: true});
+        });
       }
     }
   }
 });
-
-// TODO: bloquer le bouton si le filename est invalide (taille zéro, caractères interdits...)
-// TODO: afficher une notif à la fin de l'export en cas de succès ou d'erreur.
-// TODO: rendre le filename non editable quand l'export a démarré.

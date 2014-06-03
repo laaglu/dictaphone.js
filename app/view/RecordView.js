@@ -18,14 +18,13 @@
 
 'use strict';
 
-/* global document, $, requestAnimationFrame, location*/
+/* global document, $, requestAnimationFrame, window */
 
 var ViewBase = require('./ViewBase');
-var clipModels = require('model/ClipModels');
 var RecordTemplate = require('./template/RecordTemplate');
-var Recorder = require('Recorder');
 var env = require('AudioEnv');
 var logger = require('Logger');
+var commands = require('cmd/Commands');
 
 module.exports = ViewBase.extend({
   el: '#recordView',
@@ -37,9 +36,9 @@ module.exports = ViewBase.extend({
   },
   render : function render() {
     var data = {};
-    data.clip = this.model.toJSON();
-    data.recording = this.model.isRecording();
-    data.duration = this.model.getDuration();
+    data.clip = this.model.clip.toJSON();
+    data.recording = this.model.running;
+    data.duration = this.model.clip.getDuration();
 
     var tpl = $(this.template(data));
     document.webL10n.translate(tpl[0]);
@@ -54,39 +53,38 @@ module.exports = ViewBase.extend({
     return this;
   },
   updateName : function updateName(/*e*/) {
-    this.model.set('name', this.name.val());
+    this.model.clip.set('name', this.name.val());
   },
   toggleRecord : function toggleRecord(/*e*/) {
-    if (this.model.isRecording()) {
-      this.recordButton.addClass('icon-record');
-      this.recordButton.removeClass('icon-stop');
-      var terminate = function terminate() {
-        // Display the clip list view
-        location.hash = '#/list';
-      }.bind(this);
-      this.model.recorder.stop({ success: terminate, error:logger.error });
+    var self = this;
+    if (self.model.running) {
+      self.recordButton.addClass('icon-record');
+      self.recordButton.removeClass('icon-stop');
+      self.model.stop()
+        .then(function() {
+          commands.remove(self.model);
+          // Display the clip list view
+          window.router.navigate('list', {trigger: true, replace: true});
+        })
+        .then(null, logger.error);
     } else {
       env.getMediaSource()
         .then(function ready(localMediaStream) {
-          this.recordButton.addClass('icon-stop');
-          this.recordButton.removeClass('icon-record');
-          clipModels.nextId();
-          clipModels.add(this.model);
-          this.model.recorder = new Recorder({model: this.model});
-          this.model.recorder.start(localMediaStream);
-          this.update(this.model);
-        }.bind(this))
-        .then(null, function(err) {
-          logger.log(err);
-        });
+          self.recordButton.addClass('icon-stop');
+          self.recordButton.removeClass('icon-record');
+          self.model.start(localMediaStream);
+          self.update(self.model);
+        })
+        .then(null, logger.error);
     }
   },
   update: function update(model) {
+    var self = this;
     // If the model has changed, do not update the UI
-    if (this.model === model) {
-      this.duration.val(this.model.getDuration());
-      if (model.isRecording()) {
-        requestAnimationFrame(update.bind(this, model));
+    if (self.model === model) {
+      self.duration.val(model.clip.getDuration());
+      if (model.running) {
+        requestAnimationFrame(update.bind(self, model));
       }
     }
   }

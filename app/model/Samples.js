@@ -30,28 +30,25 @@ var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
 
 var samples = {
   /**
-   *
-   * @param options
-   * success: a callback to invoke upon successful database initialization
-   * error: a callback to invoke for any database related error
+   * Init function, as a Promise
    */
-  init : function init(options) {
-    // Open the database
-    var request = indexedDB.open(dbconfig.id, dbconfig.migrations[0].version);
+  init : function init() {
+    return new RSVP.Promise(function(resolve, reject) {
+      // Open the database
+      var request = indexedDB.open(dbconfig.id, dbconfig.migrations[0].version);
 
-    request.addEventListener('error', options.error || logger.error);
+      request.addEventListener('error', reject);
 
-    request.addEventListener('success', function(/*event*/) {
-      samples.db = request.result;
-      if (options.success) {
-        options.success();
-      }
-    });
+      request.addEventListener('success', function(/*event*/) {
+        samples.db = request.result;
+        resolve();
+      });
 
-    request.addEventListener('upgradeneeded', function(event) {
-      // Create the database schema
-      var db = samples.db = event.target.result;
-      dbconfig.createSchema(db);
+      request.addEventListener('upgradeneeded', function(event) {
+        // Create the database schema
+        var db = samples.db = event.target.result;
+        dbconfig.createSchema(db);
+      });
     });
   },
 
@@ -75,6 +72,9 @@ var samples = {
   },
   /**
    * Reads several samples using a cursor
+   * NB: this function cannot be turned into a Promise because
+   * it repeatedly invokes the callback when the cursor continues,
+   * whereas Promises settle only once.
    * @param options
    * success: { function({IDBCursor}) } a callback to invoke for each sample read
    * clipid: {number} the id of the clip to read
@@ -94,88 +94,64 @@ var samples = {
     return transaction;
   },
   /**
-   * Reads several samples using a cursor as a Promise
+   * Returns a Promise to delete the specified samples from a clip.
+   * It resolves to the number of samples actually deleted
    * @param options
-   * success: { function({IDBCursor}) } a callback to invoke for each sample read
-   * clipid: {number} the id of the clip to read
-   * from: {number} where to start in the clip
-   * to: {number} where to start in the clip
-   */
-  readSamples2: function readSamples2(options) {
-    var clipid = +options.clipid;
-    var transaction = samples.db.transaction(['sample'], 'readonly');
-
-    return { 
-      transaction:transaction,
-      promise: new RSVP.Promise(function(resolve, reject) {
-        //console.log('readSamples', options);
-        var store = transaction.objectStore('sample');
-        var boundKeyRange = IDBKeyRange.bound([clipid, options.from || 0], [clipid, options.to || Number.MAX_VALUE]);
-        var req = store.openCursor(boundKeyRange);
-        req.onsuccess = function(event) {
-          resolve(event.target);
-        };
-        req.onerror = reject;
-      }) 
-    };
-  },
-  /**
-   * Reads a single samples
-   * @param options
-   * success: { function({Object}) } a callback to invoke for each sample read
-   * clipid: {number} the id of the clip to read
-   * offset: {number} where to start in the clip
-   */
-  readSample: function readSample(options) {
-    var clipid = +options.clipid;
-    var store = this.sampleStoreTransaction('readonly');
-    var req = store.get([clipid, options.offset || 0]);
-    req.onsuccess = function(event) {
-      options.success(event.target.result);
-    };
-  },
-  /**
-   * Delete the specified samples from a clip
-   * @param options
-   * success: { function(count) } a callback to invoke once deletion is complete. Receives the number
-   * of samples actually deleted.
-   * error: { function() } a callback to invoke upon error
    * clipid: {number} the id of the clip to read
    * from: {number} where to start in the clip
    * to: {number} where to start in the clip
    */
   deleteSamples: function deleteSamples(options) {
-    var clipid = +options.clipid;
-    var store = this.sampleStoreTransaction('readwrite');
-    var boundKeyRange = IDBKeyRange.bound([clipid, options.from || 0], [clipid, options.to || Number.MAX_VALUE]);
-    var req = store.openCursor(boundKeyRange);
-    var count = 0;
-    req.onsuccess = function(event) {
-      var cursor = event.target.result;
-      if (cursor) {
-        cursor.delete();
-        cursor.continue();
-        count++;
-      } else if (typeof options.success === 'function') {
-        options.success(count);
-      }
-    };
-    if (typeof options.error === 'function') {
-      req.onerror = options.error;
-    }
-  },
-  getCounts: function getCounts(callback) {
-    var status = {};
-    this.clipStoreTransaction('readonly').count().onsuccess = function countClips(evt) {
-      status.clipCount = evt.target.result;
-      this.sampleStoreTransaction('readonly').count().onsuccess = function countSamples(evt) {
-        status.sampleCount = evt.target.result;
-        logger.log('getCount', status);
-        if (typeof callback === 'function') {
-          callback(status);
+    logger.log('deleteSamples', options);
+    return new RSVP.Promise(function(resolve, reject) {
+      var clipid = +options.clipid;
+      var store = samples.sampleStoreTransaction('readwrite');
+      var boundKeyRange = IDBKeyRange.bound([clipid, options.from || 0], [clipid, options.to || Number.MAX_VALUE]);
+      var req = store.openCursor(boundKeyRange);
+      var count = 0;
+      req.onsuccess = function(event) {
+        var cursor = event.target.result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+          count++;
+        } else {
+          resolve(count);
         }
       };
-    }.bind(this);
+      req.onerror = function(err) {
+        reject(err);
+      };
+    });
+  },
+  /**
+   * Returns an object of the form { clipCount: <int>, sampleCount: <int> } as a Promise
+   */
+  getCounts: function getCounts() {
+    return new RSVP.Promise(function(resolve, reject) {
+        var status = {};
+        var countReq = samples.clipStoreTransaction('readonly').count();
+        countReq.onsuccess = function count(evt) {
+          status.clipCount = evt.target.result;
+          resolve(status);        
+        };
+        countReq.onerror = function(err) {
+          reject(err);
+        };
+      })
+    .then(function(status) {
+      return new RSVP.Promise(function(resolve, reject) {
+        var countReq = samples.sampleStoreTransaction('readonly').count();
+        countReq.onsuccess = function count(evt) {
+          status.sampleCount = evt.target.result;
+          logger.log('getCount', status);
+          resolve(status);        
+        };
+        countReq.onerror = function(err) {
+          reject(err);
+        };
+      });
+    });
   },
   exportSamples: function exportSamples(filename) {
     return new Promise(function(resolve, reject) {

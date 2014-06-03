@@ -23,14 +23,14 @@ var DeviceStorageUtils = require('./DeviceStorageUtils');
 var samples = require('model/Samples');
 var logger = require('Logger');
 
-function FileHandleWriter(exporter) {
-  this.exporter = exporter;
+function FileHandleWriter(exportCmd) {
+  this.exportCmd = exportCmd;
 }
 /**
- * The exporter object
- * @type {Exporter}
+ * The exportCmd object
+ * @type {ExportCmd}
  */
-FileHandleWriter.prototype.exporter = null;
+FileHandleWriter.prototype.exportCmd = null;
 /**
  * @type {FileHandle} The FileHandle used for writing
  */
@@ -48,7 +48,7 @@ FileHandleWriter.prototype.defaultExportName = function defaultExportName() {
       return exists ? DeviceStorageUtils.ls({ storage:'music', path:'dictaphone '}) : {};
     })
     .then(function computeName(files) {
-      return DeviceStorageUtils.uniqueName(self.exporter.clip.get('name') + '.wav', files);
+      return DeviceStorageUtils.uniqueName(self.exportCmd.clip.get('name') + '.wav', files);
     });
 };
 
@@ -61,10 +61,10 @@ FileHandleWriter.prototype.initialize = function initialize() {
   var self = this;
   return DeviceStorageUtils.exists({
       storage:'music',
-      path:'dictaphone' + '/' + this.exporter.fileName})
+      path:'dictaphone' + '/' + this.exportCmd.fileName})
     .then(function(exists) {
-      if (!exists || confirm(document.webL10n.get('overwwrite', {fileName: self.exporter.fileName}))) {
-        return samples.exportSamples(self.exporter.fileName)
+      if (!exists || confirm(document.webL10n.get('overwwrite', {fileName: self.exportCmd.fileName}))) {
+        return samples.exportSamples(self.exportCmd.fileName)
           .then(function(fileHandle) {
             self.fileHandle = fileHandle;
             return true;
@@ -102,8 +102,8 @@ FileHandleWriter.prototype.writeData = function writeData(options) {
     appendReq.onprogress = function(status) {
       if (options.updateSize) {
         console.log('LOADED', status.loaded);
-        self.exporter.processedSize += (status.loaded - lastLoaded) / 4;
-        console.log('PROCESSED_SIZE', self.exporter.processedSize);
+        self.exportCmd.processedSize += (status.loaded - lastLoaded) / 4;
+        console.log('PROCESSED_SIZE', self.exportCmd.processedSize);
       }
       lastLoaded = status.loaded;
     };
@@ -122,11 +122,11 @@ FileHandleWriter.prototype.finalize = function finalize() {
     getFileReq = self.fileHandle.getFile();
     getFileReq.onerror = reject;
     getFileReq.onsuccess = function() {
-      logger.log('getFileReq', getFileReq.result, 'dictaphone/' + self.exporter.fileName);
+      logger.log('getFileReq', getFileReq.result, 'dictaphone/' + self.exportCmd.fileName);
       var storage, addNamedReq;
       storage = navigator.getDeviceStorage('music');
-      //addNamedReq = storage.addNamed(getFileReq.result, 'dictaphone/' + self.exporter.fileName);
-      addNamedReq = storage.addNamed(new Blob([self.exporter.createHeader(0, 44100)], { type: 'audio/wav'}), 'dictaphone/' + self.exporter.fileName);
+      //addNamedReq = storage.addNamed(getFileReq.result, 'dictaphone/' + self.exportCmd.fileName);
+      addNamedReq = storage.addNamed(new Blob([self.exportCmd.createHeader(0, 44100)], { type: 'audio/wav'}), 'dictaphone/' + self.exportCmd.fileName);
       addNamedReq.onerror = function(err) {
         console.log('ERROR', err);
         reject(err);

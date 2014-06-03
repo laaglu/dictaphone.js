@@ -441,3 +441,23 @@ a[data-type='tapedeck'] > span {
   line-height: 1em;
   font-size: 2.2rem;
 }
+
+/* Edit view */
+.editView {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border: 0 none;
+  width: 100%;
+  z-index: 200;
+  transition: transform 1s ease;
+  -moz-transition: -moz-transform 0.5s ease;
+  -webkit-transition: -webkit-transform 0.5s ease;
+  transform: translateY(-100%);
+  -webkit-transform: translateY(-100%);
+}
+
+.editView.visible {
+  transform: translateY(0);
+  -webkit-transform: translateY(0);
+}

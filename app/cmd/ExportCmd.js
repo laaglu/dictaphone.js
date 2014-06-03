@@ -17,6 +17,8 @@
  **********************************************/
 'use strict';
 
+/* global RSVP*/
+
 var Modernizr = require('modernizr.custom.24918');
 var samples = require('model/Samples');
 var FileHandleWriter = require('./FileHandleWriter');
@@ -24,29 +26,28 @@ var TypedArrayWriter = require('./TypedArrayWriter');
 var logger = require('Logger');
  
 /**
- * An Exporter class to extract the sound samples from IndexedDB and put them
+ * An ExportCmd class to extract the sound samples from IndexedDB and put them
  * in an audio file (currently WAV)
  * @param options
  * clip: {ClipModel} the clip to export
  * batchSize: {number} how many samples IndexedDB objects to process per iteration, defaults to 10.
  * @constructor
  */
-function Exporter(options) {
+function ExportCmd(options) {
   this.clip = options.clip;
-  options.clip.exporter = this;
   this.writer = (Modernizr.devicestorage && Modernizr.filehandle) ? new FileHandleWriter(this) : new TypedArrayWriter(this);
   this.bufferSize = +this.clip.get('sampleSize') * ( options.batchSize || 10 );
 }
 
 /**
- * Creates the exporter, as a Promise
+ * Creates the export command, as a Promise
  */
-Exporter.createExporter = function createExporter(options) {
-  var exporter = new Exporter(options);
-  return exporter.writer.defaultExportName()
+ExportCmd.createExportCmd = function createExportCmd(options) {
+  var exportCmd = new ExportCmd(options);
+  return exportCmd.writer.defaultExportName()
     .then(function(fileName) {
-      exporter.fileName = fileName;
-      return exporter;
+      exportCmd.fileName = fileName;
+      return exportCmd;
     });
 };
 
@@ -54,39 +55,39 @@ Exporter.createExporter = function createExporter(options) {
  * The sound clip
  * @type {ClipModel}
  */
-Exporter.prototype.clip = null;
+ExportCmd.prototype.clip = null;
 /**
  * A writer object to persist the exported clip
  * @type {null}
  */
-Exporter.prototype.writer = null;
+ExportCmd.prototype.writer = null;
 /**
  * The clip size processed so far
  * @type {number}
  */
-Exporter.prototype.processedSize = 0;
+ExportCmd.prototype.processedSize = 0;
 /**
  * The internal buffer size
  * @type {number}
  */
-Exporter.prototype.bufferSize = 0;
+ExportCmd.prototype.bufferSize = 0;
 /**
  * The transaction used to read the samples
  * @type {IDBTransaction}
  */
-Exporter.prototype.transaction = null;
+ExportCmd.prototype.transaction = null;
 /**
- * True if export is running, false otherwise
+ * True if command is exporting, false otherwise
  * @type {boolean}
  */
-Exporter.prototype.exporting = false;
+ExportCmd.prototype.running = false;
 /**
  * The file name to use for the export
  * @type {boolean}
  */
-Exporter.prototype.fileName = null;
+ExportCmd.prototype.fileName = null;
 
-Exporter.prototype.export_ = function export_() {
+ExportCmd.prototype.export_ = function export_() {
   var self = this,
     totalSize = +this.clip.get('totalSize'),
     sampleRate = +this.clip.get('sampleRate'),
@@ -135,12 +136,12 @@ Exporter.prototype.export_ = function export_() {
         // Done, finalize the export
         self.writer.finalize()
          .then(function finalizeExport() {
-           self.exporting = false;
+           self.running = false;
         });
       }
     };
 
-  self.exporting = true;
+  self.running = true;
   self.writer.initialize()
     .then(function(proceed) {
       if (proceed) {
@@ -163,7 +164,7 @@ Exporter.prototype.export_ = function export_() {
  * @param {number} sampleRate
  * @returns {ArrayBuffer}
  */
-Exporter.prototype.createHeader = function createHeader(totalSize, sampleRate) {
+ExportCmd.prototype.createHeader = function createHeader(totalSize, sampleRate) {
   var header = new ArrayBuffer(44),
     headerView = new DataView(header),
     writeHeader = function writeHeader(offset, str) {
@@ -189,12 +190,23 @@ Exporter.prototype.createHeader = function createHeader(totalSize, sampleRate) {
   return header;
 };
 
-Exporter.prototype.abort = function abort() {
-  if (this.transaction) {
-    this.transaction.abort();
-    this.transaction = null;
-  }
-  this.exporting = false;
+ExportCmd.prototype.stop = function stop() {
+  console.log('stop', this);
+  var self = this;
+  return new RSVP.Promise(function(resolve, reject) {
+    self.running = false;
+    try {
+      if (self.transaction) {
+        self.transaction.abort(); 
+        self.transaction = null;
+      }
+      resolve(self);
+    } catch(err) {
+      reject(err);
+    }
+  });
 };
 
-module.exports = Exporter;
+ExportCmd.cmdid = 'export';
+
+module.exports = ExportCmd;

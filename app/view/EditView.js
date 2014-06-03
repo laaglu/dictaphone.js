@@ -16,32 +16,40 @@
  * along with dictaphone.js.  If not, see http://www.gnu.org/licenses/
  **********************************************/
 
-/*global localStorage*/
 'use strict';
 
-var SHOW_LOGS = 'showLogs';
-var showLogs = localStorage.getItem(SHOW_LOGS);
-var logger = {
-  getShowLogs : function getShowLogs() {
-    return showLogs === 'true';
+/* global $, document*/
+
+var ViewBase = require('./ViewBase');
+var EditTemplate = require('./template/EditTemplate');
+var logger = require('Logger');
+var VISIBLE = 'visible';
+
+module.exports = ViewBase.extend({
+  el: '#editView',
+  template: EditTemplate,
+  events: {
+    'click a[role="button"][data-type="commit"]' : 'commit',
+    'click a[role="button"][data-type="rollback"]' : 'rollback'
   },
-  setShowLogs : function setShowLogs(value) {
-    localStorage.setItem(SHOW_LOGS, value);
-    showLogs = value;
+
+  render : function render() {
+    logger.log('EditView.render()');
+    var tpl = $(this.template({}));
+    document.webL10n.translate(tpl[0]);
+    this.replaceContent(tpl);
+    this.delegateEvents();
+    return this;
   },
-  log: function log() {
-    if (showLogs === 'true') {
-      console.log.apply(console, arguments);
-    }
+
+  isActive : function isActive() {
+    return this.$el.hasClass(VISIBLE);
   },
-  error: function error() {
-    if (showLogs === 'true') {
-      console.error.apply(console, arguments);
+
+  activate : function activate(active) {
+    if (this.isActive() !== active) {
+      this.$el[active ? 'addClass' : 'removeClass'](VISIBLE);
     }
   }
-};
-// If the setting has not been set explicitely, it is off by default.
-if (showLogs === null) {
-  logger.setShowLogs('false');
-}
-module.exports = logger;
+});
+

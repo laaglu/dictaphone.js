@@ -19,20 +19,20 @@
 
 /* global Blob, URL, document, $, window, RSVP */
 
-function TypedArrayWriter(exporter) {
+function TypedArrayWriter(exportCmd) {
   var totalSize;
 
-  this.exporter = exporter;
-  totalSize = +exporter.clip.get('totalSize');
+  this.exportCmd = exportCmd;
+  totalSize = +exportCmd.clip.get('totalSize');
   this.buffer = new ArrayBuffer(44 + 4 * totalSize);
   this.bufferView = new Uint8Array(this.buffer);
 }
 
 /**
- * The exporter object
- * @type {Exporter}
+ * The exportCmd object
+ * @type {ExportCmd}
  */
-TypedArrayWriter.prototype.exporter = null;
+TypedArrayWriter.prototype.exportCmd = null;
 /**
  * The buffer which stores the wav file
  * @type {ArrayBuffer}
@@ -53,7 +53,7 @@ TypedArrayWriter.prototype.offset = 0;
  * Returns a default name for the exported clip
  */
 TypedArrayWriter.prototype.defaultExportName = function defaultExportName() {
-  return Promise.resolve(this.exporter.clip.get('name') + '.wav');
+  return Promise.resolve(this.exportCmd.clip.get('name') + '.wav');
 };
 
 /**
@@ -74,7 +74,7 @@ TypedArrayWriter.prototype.writeData = function writeData(options) {
   this.bufferView.set(new Uint8Array(options.data), this.offset);
   this.offset += options.data.byteLength;
   if (options.updateSize) {
-    this.exporter.processedSize += options.data.byteLength / 4;
+    this.exportCmd.processedSize += options.data.byteLength / 4;
   }
   return RSVP.Promise.resolve();
 };
@@ -89,7 +89,7 @@ TypedArrayWriter.prototype.finalize = function finalize() {
     evt;
 
   link.href = URL.createObjectURL(blob);
-  link.download = this.exporter.fileName;
+  link.download = this.exportCmd.fileName;
   link.style.visibility = 'hidden';
   section.append($(link));
   evt = document.createEvent("MouseEvents");

@@ -6,10 +6,6 @@ var utils = {};
 
 utils.status = (function() {
 
-  // This constant is essential to resolve what is the path of the CSS file
-  // that defines the animations
-  //var FILE_NAME = 'status';
-
   // How many milliseconds is displayed the status component by default
   var DISPLAYED_TIME = 2000;
 
@@ -18,6 +14,8 @@ utils.status = (function() {
 
   // The numerical ID of the timeout in order to hide UI component
   var timeoutID;
+
+  var queue = [];
 
   /*
    * Clears the callback in charge of hiding the component after timeout
@@ -42,15 +40,22 @@ utils.status = (function() {
    *
    */
   function show(message, duration) {
+    queue.push({message:message, duration:duration});
+    if (queue.length === 1) {
+      dequeue();
+    }
+  }
+
+  function dequeue() {
     clearHideTimeout();
     content.innerHTML = '';
 
-    if (typeof message === 'string') {
-      content.textContent = message;
+    if (typeof queue[0].message === 'string') {
+      content.textContent = queue[0].message;
     } else {
       try {
         // Here we should have a DOMFragment
-        content.appendChild(message);
+        content.appendChild(queue[0].message);
       } catch(ex) {
         console.error('DOMException: ' + ex.message);
       }
@@ -58,7 +63,7 @@ utils.status = (function() {
 
     section.classList.remove('hidden');
     section.classList.add('onviewport');
-    timeoutID = window.setTimeout(hide, duration || DISPLAYED_TIME);
+    timeoutID = window.setTimeout(hide, queue[0].duration || DISPLAYED_TIME);
   }
 
   /*
@@ -71,6 +76,10 @@ utils.status = (function() {
       clearHideTimeout();
       section.classList.add('hidden');
       eventName = 'status-hidden';
+      queue.shift();
+      if (queue.length) {
+        dequeue();
+      }
     }
 
     window.dispatchEvent(new CustomEvent(eventName));
