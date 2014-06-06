@@ -127,7 +127,7 @@ Loader.prototype.buffer = function buffer(time) {
 };
 
 Loader.prototype.getSamples = function getSamples(time) {
-  //console.log('getSamples', time, this.loading(), this.atend(), this.starved(), this.loadedOffset, this.requestedOffset);
+  //logger.log('getSamples', time, this.loading(), this.atend(), this.starved(), this.loadedOffset, this.requestedOffset);
   var samples = null;
   var offset = this.toByteCount(time);
 

@@ -191,7 +191,7 @@ ExportCmd.prototype.createHeader = function createHeader(totalSize, sampleRate) 
 };
 
 ExportCmd.prototype.stop = function stop() {
-  console.log('stop', this);
+  logger.log('stop', this);
   var self = this;
   return new RSVP.Promise(function(resolve, reject) {
     self.running = false;
@@ -206,7 +206,5 @@ ExportCmd.prototype.stop = function stop() {
     }
   });
 };
-
-ExportCmd.cmdid = 'export';
 
 module.exports = ExportCmd;

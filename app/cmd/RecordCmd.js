@@ -23,8 +23,11 @@
 var samples = require('model/Samples');
 var clipModels = require('model/ClipModels');
 var env = require('AudioEnv');
+var logger = require('Logger');
 
 /**
+ * A WebAudio API record command which stores raw PCM data in a
+ * IndexedDB database.
  * @constructor
  * @param options
  * bufferCapacity: clip length to keep in ram before flushing
@@ -59,7 +62,7 @@ RecordCmd.prototype.clip = null;
  */
 RecordCmd.prototype.buffer = null;
 /**
- * Capacity of the buffer is seconds
+ * Capacity of the buffer in seconds
  * @type {number}
  */
 RecordCmd.prototype.bufferCapacity = 0;
@@ -126,7 +129,7 @@ RecordCmd.prototype.copyBuffer = function copyBuffer(buffer) {
  * Returns a promise which is accomplished when the command has stopped
  */
 RecordCmd.prototype.stop = function stop() {
-  console.log('stop', this);
+  logger.log('stop', this);
   var self = this;
   return new RSVP.Promise(function(resolve, reject) {
     self.running = false;
@@ -161,6 +164,5 @@ RecordCmd.prototype.flush = function flush() {
     this.clip.trigger('clip:length');
   }
 };
-RecordCmd.cmdid = 'record';
 
 module.exports = RecordCmd;

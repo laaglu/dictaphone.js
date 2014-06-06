@@ -4,12 +4,12 @@
 
 var clipidToCmds = {};
 
-function add(cmd) {
+function add(cmd, cmdid) {
   var commands = clipidToCmds[cmd.clip.id];
   if (!commands) {
     commands = clipidToCmds[cmd.clip.id] = {};
   }
-  commands[cmd.constructor.cmdid] = cmd;
+  commands[cmdid] = cmd;
   return cmd;
 }
 
@@ -55,7 +55,10 @@ var commands = {
   remove: remove,
   get: get,
   isRunning: isRunning,
-  reset: reset
+  reset: reset,
+  PLAY: 'play',
+  RECORD: 'record',
+  EXPORT: 'export'
 };
 
 module.exports = commands;

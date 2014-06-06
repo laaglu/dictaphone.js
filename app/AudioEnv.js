@@ -34,7 +34,7 @@ navigator.getMedia = ( navigator.getUserMedia ||
 var mediaSourceFactory = {
   getSource : function getMediaSource(options) {
     return new RSVP.Promise(function(resolve, reject) {
-      if (!mediaSource || mediaSource.mediaStream.ended || env.getReleaseMic()) {
+      if (env.getReleaseMic() || !mediaSource) {
         navigator.getMedia (
           {
             video: false,
@@ -56,8 +56,8 @@ var mediaSourceFactory = {
   },
 
   releaseSource: function releaseMediaSource(source) {
-    var mediaStream;
-    if (env.getReleaseMic() && (mediaStream = source.mediaStream)) {
+    var mediaStream = source.mediaStream;
+    if (env.getReleaseMic() && mediaStream) {
       mediaStream.stop();
       // For firefox: the object does not have the ended property.
       if (!mediaStream.ended) {
@@ -67,6 +67,10 @@ var mediaSourceFactory = {
   }
 };
 
+/**
+ * For environments which do not have a microphone, simulate
+ * a noise source with an oscillator so that there is something to record.
+ */
 var oscillatorSourceFactory = {
   getSource : function getOscillatorSource(options) {
     var freq = 1000, 
@@ -95,7 +99,7 @@ var oscillatorSourceFactory = {
   }
 };
 
-var factory = oscillatorSourceFactory;
+var factory = mediaSourceFactory;
 
 env = {
   getMediaSource: factory.getSource,

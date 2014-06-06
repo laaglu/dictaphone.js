@@ -191,7 +191,7 @@ PlayCmd.prototype.start = function start(clipTime) {
 };
 
 PlayCmd.prototype.stop = function stop() {
-  console.log('stop', this);
+  logger.log('stop', this);
   if (this.running) {
     this.running = false;
     // Deactivate the heartbeat
@@ -208,8 +208,6 @@ PlayCmd.prototype.getVolume = function getVolume() {
 PlayCmd.prototype.setVolume = function setVolume(value) {
   this.gainNode.gain.value = value;
 };
-
-PlayCmd.cmdid = 'play';
 
 _.extend(PlayCmd.prototype, Backbone.Events);
 module.exports = PlayCmd;

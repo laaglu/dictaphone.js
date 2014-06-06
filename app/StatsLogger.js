@@ -22,7 +22,6 @@
 
 var logger = require('Logger');
 var commands = require('cmd/Commands');
-var PlayCmd = require('cmd/PlayCmd');
 
 function StatsLogger(clip) {
   this.clip = clip;
@@ -68,7 +67,7 @@ StatsLogger.prototype.log = function log() {
   }
 };
 StatsLogger.prototype.stateChange = function stateChange() {
-  if (commands.isRunning(this.clip.id, PlayCmd.cmdid)) {
+  if (commands.isRunning(this.clip.id, commands.PLAY)) {
     this.reset();
   } else {
     this.dump();

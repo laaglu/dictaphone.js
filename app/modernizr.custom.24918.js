@@ -424,6 +424,11 @@ window.Modernizr = (function( window, document, undefined ) {
     return typeof window.AudioContext === 'function'
       || typeof window.webkitAudioContext === 'function';
   });
+
+  Modernizr.addTest('mediarecorder', function() {
+    return typeof window.MediaRecorder === 'function';
+  });
+
   Modernizr.addTest('webactivities', function() {
     return typeof window.MozActivity === 'function';
   });

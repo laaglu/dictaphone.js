@@ -82,7 +82,7 @@ var samples = {
    * to: {number} where to start in the clip
    */
   readSamples: function readSamples(options) {
-    //console.log('readSamples', options);
+    //logger.log('readSamples', options);
     var clipid = +options.clipid;
     var transaction = samples.db.transaction(['sample'], 'readonly');
     var store = transaction.objectStore('sample');

@@ -85,15 +85,15 @@ FileHandleWriter.prototype.writeData = function writeData(options) {
     lockedFile = this.fileHandle.open('readwrite');
   return new RSVP.Promise(function(resolve, reject) {
     var lastLoaded, appendReq;
-    console.log('LOCKEDFILE1', lockedFile.active);
+    logger.log('LOCKEDFILE1', lockedFile.active);
     lastLoaded = 0;
     appendReq = lockedFile.append(options.data);
     appendReq.onsuccess = function() {
       var flushReq;
-      console.log('LOCKEDFILE2', lockedFile.active);
+      logger.log('LOCKEDFILE2', lockedFile.active);
       flushReq = lockedFile.flush();
       flushReq.onsuccess = function() {
-        console.log('LOCKEDFILE3', lockedFile.active);
+        logger.log('LOCKEDFILE3', lockedFile.active);
         resolve();
       };
       flushReq.onerror = reject;
@@ -101,9 +101,9 @@ FileHandleWriter.prototype.writeData = function writeData(options) {
     appendReq.onerror = reject;
     appendReq.onprogress = function(status) {
       if (options.updateSize) {
-        console.log('LOADED', status.loaded);
+        logger.log('LOADED', status.loaded);
         self.exportCmd.processedSize += (status.loaded - lastLoaded) / 4;
-        console.log('PROCESSED_SIZE', self.exportCmd.processedSize);
+        logger.log('PROCESSED_SIZE', self.exportCmd.processedSize);
       }
       lastLoaded = status.loaded;
     };
@@ -128,11 +128,11 @@ FileHandleWriter.prototype.finalize = function finalize() {
       //addNamedReq = storage.addNamed(getFileReq.result, 'dictaphone/' + self.exportCmd.fileName);
       addNamedReq = storage.addNamed(new Blob([self.exportCmd.createHeader(0, 44100)], { type: 'audio/wav'}), 'dictaphone/' + self.exportCmd.fileName);
       addNamedReq.onerror = function(err) {
-        console.log('ERROR', err);
+        logger.log('ERROR', err);
         reject(err);
       };
       addNamedReq.onsuccess = function() {
-        console('SUCCESS ' + this.result);
+        logger.log('SUCCESS ' + this.result);
       };
     };
   });

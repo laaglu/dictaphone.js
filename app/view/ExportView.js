@@ -96,7 +96,7 @@ module.exports = ViewBase.extend({
     if (this.model === model) {
       completion = model.processedSize / totalSize;
       this.progress.val(completion);
-      console.log('COMPLETION', completion, model.running);
+      logger.log('COMPLETION', completion, model.running);
       if (model.running) {
         requestAnimationFrame(update.bind(this, model));
       } else if (completion >= 1) {

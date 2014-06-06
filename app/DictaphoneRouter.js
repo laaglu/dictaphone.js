@@ -74,13 +74,13 @@ module.exports = Backbone.Router.extend({
     if (callback) {
       result = callback.apply(this, args);
       if ('rollback' === result) {
-        console.log('Rollback:', this.currentPath);
+        logger.log('Rollback:', this.currentPath);
         if (newPath !== this.currentPath) {
           this.navigate(this.currentPath, {trigger: true, replace: true});
         }
       } else {
         this.currentPath = newPath.join('/');
-        console.log('Commit:', this.currentPath);
+        logger.log('Commit:', this.currentPath);
       }
     }
   },
@@ -140,9 +140,9 @@ module.exports = Backbone.Router.extend({
       }
       clip = clipModels.get(clipid);
       if (clip) {
-        cmd = commands.get(clipid, PlayCmd.cmdid);
+        cmd = commands.get(clipid, commands.PLAY);
         if (!cmd) {
-          cmd = commands.add(new PlayCmd({clip: clip, logger:new StatsLogger(clip)}));
+          cmd = commands.add(new PlayCmd({clip: clip, logger:new StatsLogger(clip)}), commands.PLAY);
         }
         if (this.playView.model !== cmd) {
           this.playView.model = cmd;
@@ -170,9 +170,9 @@ module.exports = Backbone.Router.extend({
         }
         clip = clipModels.getNewClipModel();
       }
-      cmd = commands.get(clipid, RecordCmd.cmdid);
+      cmd = commands.get(clipid, commands.RECORD);
       if (!cmd) {
-        cmd = commands.add(new RecordCmd({clip: clip}));
+        cmd = commands.add(new RecordCmd({clip: clip}), commands.RECORD);
       }
       if (this.recordView.model !== cmd) {
         this.recordView.model = cmd;
@@ -227,11 +227,11 @@ module.exports = Backbone.Router.extend({
       }
       clip = clipModels.get(clipid);
       if (clip) {
-        cmd = commands.get(clipid, ExportCmd.cmdid);
+        cmd = commands.get(clipid, commands.EXPORT);
         if (!cmd) {
           cmd = ExportCmd.createExportCmd({ clip: clip })
             .then(function(cmd) {
-              return commands.add(cmd);
+              return commands.add(cmd, commands.EXPORT);
             });
         } else {
           cmd = RSVP.Promise.resolve(cmd);
