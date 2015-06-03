@@ -1,4 +1,10 @@
 exports.config = {
+  conventions: {
+    assets: function(path) {
+      return /^assets/.test(path) &&
+       !(/manifest\.properties$/.test(path) || /translation\.properties$/.test(path));
+    }
+  },
   paths: {
     'public' : '../dictaphone-brunch',
     watched: [

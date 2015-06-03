@@ -1,54 +1,95 @@
 {
-  "version": "1.0.8",
-  "name": "Dictaphone",
-  "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
-  "developer": {
-    "name": "Lukas Laag",
-    "url": "http://www.vectomatic.org"
+ "version": "1.0.9",
+ "name": "Dictaphone",
+ "description": "A digital dictaphone application for the web in general and FirefoxOS in particular",
+ "developer": {
+  "name": "Lukas Laag",
+  "url": "http://www.vectomatic.org"
+ },
+ "launch_path": "/index.html",
+ "appcache_path": "/index.appcache",
+ "installs_allowed_from": [
+  "*"
+ ],
+ "icons": {
+  "30": "/img/icons/icon-30.png",
+  "32": "/img/icons/icon-32.png",
+  "60": "/img/icons/icon-60.png",
+  "90": "/img/icons/icon-90.png",
+  "120": "/img/icons/icon-120.png",
+  "128": "/img/icons/icon-128.png",
+  "256": "/img/icons/icon-256.png"
+ },
+ "default_locale": "en",
+ "locales": {
+  "bn_BD": {
+   "name": "Dictaphone",
+   "description": "সাধারনভাবে ওয়েবের জন্য এবং বিশেষভাবে FirefoxOS এর জন্য একটি ডিজিটাল ডিকটাফোন অ্যাপ্লিকেসন"
   },
-  "launch_path": "/index.html",
-  "appcache_path": "/index.appcache",
-  "installs_allowed_from": ["*"],
-  "icons": {
-    "30": "/img/icons/icon-30.png",
-    "32": "/img/icons/icon-32.png",
-    "60": "/img/icons/icon-60.png",
-    "90": "/img/icons/icon-90.png",
-    "120": "/img/icons/icon-120.png",
-    "128": "/img/icons/icon-128.png",
-    "256": "/img/icons/icon-256.png"
+  "bn_IN": {
+   "name": "ডিক্টাফোন",
+   "description": "সাধারনত একটি ডিজিটাল ডিক্টাফোন অ্যাপ্লিকেশন হল ওয়েবের জন্য এবং বিশেষ ক্ষেত্রে FirefoxOS-এর জন্য"
   },
-  "default_locale": "en",
-  "locales": {
-    "de": {
-      "name": "Diktaphon",
-      "description": "Ein digitales Diktaphon für das Web im Allgemeinen und Firefox OS im Speziellen"
-    },
-    "es": {
-      "name": "Dictáfono",
-      "description": "Una aplicación de grabación de voz digital para la web en general y FirefoxOS en particular"
-    },
-    "fr": {
-      "name": "Dictaphone",
-      "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier"
-    },
-    "zh_CN": {
-      "name": "Dictaphone",
-      "description": "一款适用于所有Web平台，特别是Firefox OS平台的数字录音应用"
-    },
-    "zh_TW": {
-      "name": "Dictaphone",
-      "description": "一套供 Firefox OS 與其他網頁平台使用的數位錄音軟體"
-    }
+  "ca": {
+   "name": "Gravadora",
+   "description": "Gravadora digital per a la web en general i per a FirefoxOS en particular"
   },
-  "permissions": {
-    "audio-capture" : {
-      "description" : "Capture input from the microphone to create sound clips"
-    },
-    "storage" : {
-      "description" : "Store sound clips in IndexedDB without size limitations"
-    }
+  "de": {
+   "name": "Diktaphon",
+   "description": "Ein digitales Diktaphon für das Web im Allgemeinen und Firefox OS im Speziellen."
   },
-  "type": "web"
+  "el": {
+   "name": "Dictaphone",
+   "description": "Μια ψηφιακή εφαρμογή φωνογράφιας για το διαδίκτυο γενικά και ειδικότερα για το FirefoxOS"
+  },
+  "es": {
+   "name": "Dictáfono",
+   "description": "Una aplicación de grabación de voz digital para la web en general y FirefoxOS en particular"
+  },
+  "fr": {
+   "name": "Dictaphone",
+   "description": "Une application de dictaphone digital pour le web en général et FirefoxOS en particulier"
+  },
+  "hi_IN": {
+   "name": "बोले हुए शब्दों को टाइप में लिखने का यंत्र",
+   "description": "सामान्य और विशेष रूप FirefoxOS में वेब के लिए एक डिजिटल डिक्टाफोन आवेदन"
+  },
+  "lv": {
+   "name": "Diktofons",
+   "description": "Digitāla diktofona aplikācija webam kopumā un īpaši paredzēta FirefoxOSam."
+  },
+  "ml": {
+   "name": "ഡിക്റ്റാഫോണ്‍ ",
+   "description": "വെബിനും വിശിഷ്യാ ഫയർഫൊക്സ് ഒ.എസ്‌നും വേണ്ടിയുള്ള ഒരു ഡിജിറ്റൽ ഡിക്റ്റാഫോണ്‍ അപ്ലിക്കേഷൻ."
+  },
+  "nl": {
+   "name": "Dictaphone",
+   "description": "Een digitale dictafoontoepassing voor het web in het algemeen en FirefoxOS in het bijzonder"
+  },
+  "pt_BR": {
+   "name": "Dictaphone",
+   "description": "Um aplicativo ditafone para a web em geral e em particular para o FirefoxOS"
+  },
+  "ta_IN": {
+   "name": "டிக்டாபோன்",
+   "description": "டிஜிட்டல் டிக்டாபோன் பயன்பாடு வலைதளத்திற்க்கு பொதுவாகவும் குறிப்பிடத்தக்க வகையில் FirefoxOS க்கும் உள்ளது\n"
+  },
+  "zh_CN": {
+   "name": "Dictaphone",
+   "description": "一款适用于所有Web平台，特别是Firefox OS平台的数字录音应用"
+  },
+  "zh_TW": {
+   "name": "Dictaphone",
+   "description": "一套供 Firefox OS 與其他網頁平台使用的數位錄音軟體"
+  }
+ },
+ "permissions": {
+  "audio-capture": {
+   "description": "Capture input from the microphone to create sound clips"
+  },
+  "storage": {
+   "description": "Store sound clips in IndexedDB without size limitations"
+  }
+ },
+ "type": "web"
 }
-
