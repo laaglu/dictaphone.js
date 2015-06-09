@@ -60,21 +60,28 @@ var started = false,
     }
   },
   count = 0,
+  initialized = false,
+  state,
   intervalId = setInterval(function checkWebL10nReady() {
-    if (document.webL10n.getReadyState() === 'complete') {
-      console.log('webl10n delayed initialization');
-      startApp();
+    if (initialized) {
       clearInterval(intervalId);
     } else {
       count++;
-      if (count > 20) {
+      state = document.webL10n.getReadyState();
+      if (state === 'complete' || state === 'interactive') {
+        console.log('webl10n initialized (delayed):' + state);
+        initialized = true;
+        setTimeout(startApp, 0);
+      } else if (count > 20)  {
         alert('webl10n initialization error');
-        clearInterval(intervalId);
+        initialized = true;
       }
     }
   }, 500);
 
 document.webL10n.ready(function() {
-  console.log('webl10n regular initialization');
+  state = document.webL10n.getReadyState();
+  console.log('webl10n initialized:' + state);
+  initialized = true;
   startApp();
 });
