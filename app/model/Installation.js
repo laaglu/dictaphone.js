@@ -112,8 +112,9 @@ var Installation = Backbone.Model.extend({
           var myorigin = window.location.protocol + "//" + window.location.host;
           if (req2.result !== null) {
             req2.result.forEach(function (app) {
-              if (app.origin === myorigin)
+              if (app.origin === myorigin) {
                 result = app;
+              }
             });
           }
           if (result) {
@@ -205,12 +206,13 @@ var Installation = Backbone.Model.extend({
   },
 
   chromeStoreInstall: function () {
+    var installation = this;
     chrome.webstore.install(null,
       function () {
-        triggerChange('installed');
+        installation.set('state', 'installed');
       },
-      function (err) {
-        install.trigger('error', err);
+      function () {
+        installation.set('error', document.webL10n.get('installError'));
       });
   },
 

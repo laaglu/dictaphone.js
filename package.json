@@ -32,16 +32,16 @@
   },
   "homepage": "http://fos-games.org",
   "dependencies": {
-    "brunch": "~1.7.13",
-    "css-brunch": "~1.7.0",
-    "cssembed-brunch": "~1.0.0",
-    "clean-css-brunch": "~1.7.1",
-    "javascript-brunch": "~1.7.1",
-    "jshint-brunch": "1.7.0",
-    "handlebars-brunch": "~1.7.7",
+    "brunch": "~2.2.3",
+    "css-brunch": "~2.0.0",
+    "cssembed-brunch": "~1.2.0",
+    "clean-css-brunch": "~2.0.0",
+    "javascript-brunch": "~2.0.0",
+    "jshint-brunch": "2.0.0",
+    "handlebars-brunch": "~2.0.1",
     "appcache-brunch" : "~1.7.1",
-    "uglify-js-brunch" : "~1.7.7",
-    "imageoptmizer-brunch": "~0.0.4"
+    "uglify-js-brunch" : "~2.0.1",
+    "imageoptmizer-brunch": "~0.0.6"
   },
   "scripts": {
     "postinstall": "bower install ; cat bower_components/moment/moment.js bower_components/moment/lang/*.js > bower_components/moment/moment+lang.js ; brunch build --production",

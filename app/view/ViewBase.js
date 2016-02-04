@@ -16,6 +16,7 @@
  * along with dictaphone.js.  If not, see http://www.gnu.org/licenses/
  **********************************************/
 
+'use strict';
 /* global Backbone, MozActivity, window*/
 
 var Modernizr = require('modernizr.custom.24918');

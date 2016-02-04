@@ -54,7 +54,7 @@ var ClipModel = Backbone.Model.extend({
     var duration, ms, format;
 
     duration = this.get('duration');
-    ms = ~~(duration * 1000);
+    ms = Math.floor(duration * 1000);
     if (ms < 60000) {
       format = 's.S';
     } else if (ms < 3600000) {
@@ -114,7 +114,7 @@ var ClipModel = Backbone.Model.extend({
 
   },
   getSampleCount: function() {
-    return ~~(this.get('totalSize') / this.get('sampleSize'));
+    return Math.floor(this.get('totalSize') / this.get('sampleSize'));
   },
   isPlaying: function isPlaying() {
     return this.player && this.player.playing;

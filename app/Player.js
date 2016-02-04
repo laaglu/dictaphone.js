@@ -187,7 +187,7 @@ Player.prototype.start = function start(clipTime) {
   this.loader.reset(this.clipTime);
 
   // Activate the heartbeat
-  this.timer.start(this.onheartbeat.bind(this), ~~(this.heartbeat * 1000));
+  this.timer.start(this.onheartbeat.bind(this), Math.floor(this.heartbeat * 1000));
 };
 
 Player.prototype.stop = function stop() {
